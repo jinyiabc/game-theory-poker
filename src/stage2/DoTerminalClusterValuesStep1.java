@@ -21,35 +21,35 @@ import java.io.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class DoTerminalClusterValuesStep1 {
-	
-	private static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	private static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 	"stage2" + Constants.dirSep;
-	
-	private static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	private static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 	"stage2" + Constants.dirSep;
-	
+
 	private static final int MAX_SIMULT_FILES_OPEN = Constants.choose(Card.NUM_CARDS, 2);
-	
+
 	public static void main(String[] args) throws IOException {
 		double tTotal = System.currentTimeMillis();
 
 		int numHoleCards = Constants.choose(Card.NUM_CARDS, 2);
 		final int numBoardCards = 5;
-		
+
 		// ------------------------------------------------------------
 		// load up all input files
 		// ------------------------------------------------------------
 		String inputDir = ROOT_INPUT_DIR + "clustering_step2_5" + Constants.dirSep;
-		ReadBinaryClusterIdStream[] in = 
+		ReadBinaryClusterIdStream[] in =
 			new ReadBinaryClusterIdStream[numHoleCards];
-		
+
 		int inPointer = 0;
 		for(int i = 0; i < (Card.NUM_CARDS-1); i++) {
 			for(int j = i+1; j < Card.NUM_CARDS; j++) {
-				String path = inputDir + new Integer(i).toString() + "_" + new Integer(j).toString();
+				String path = inputDir + Integer.valueOf(i).toString() + "_" + Integer.valueOf(j).toString();
 				in[inPointer++] = new ReadBinaryClusterIdStream(
-						path, 
-						numBoardCards, 
+						path,
+						numBoardCards,
 						Helper.getBufferSize(MAX_SIMULT_FILES_OPEN));
 			}
 		}
@@ -69,11 +69,11 @@ public class DoTerminalClusterValuesStep1 {
 		}
 
 		int numClusters = in[0].getNumClusters();
-		
+
 		// strictly upper triangular matrix where higher values are in favor of the row-player
 		long[][] winCount = new long[numClusters][numClusters];
 		long[][] normalizeCount = new long[numClusters][numClusters];
-		
+
 
 		Combinations rootCombo = new Combinations(Card.ALLCARDSINDEX, numBoardCards);
 		byte[] rootBoardCards;
@@ -83,37 +83,37 @@ public class DoTerminalClusterValuesStep1 {
 		double tPhase = System.currentTimeMillis();
 		int progressCounter = 0;
 		int fiveThousands = (int) Math.floor(Constants.choose(Card.NUM_CARDS, numBoardCards) / 200);
-		
+
 		while(rootCombo.hasMoreElements()) {
 			progressCounter++;
 			if (progressCounter % fiveThousands == 0) {
 				System.out.println("  " +
-						(System.currentTimeMillis() - tPhase) + 
-						": " + (new Double((double)progressCounter / 
+						(System.currentTimeMillis() - tPhase) +
+						": " + ( Double.valueOf((double)progressCounter / 
 						Constants.choose(Card.NUM_CARDS, numBoardCards))).toString() + "% done");
 			}
-			
+
 			rootBoardCards = rootCombo.nextElement();
 
 			int[] score = new int[numLegalHoleCards];
 			byte[] clusterId = new byte[numLegalHoleCards];
-			
+
 			int pointer = 0;
 			for(int i = 0; i < numHoleCards; i++) {
 				if(!Helper.contains(rootBoardCards, holeCards[i][0]) &&
 						!Helper.contains(rootBoardCards, holeCards[i][1])) {
-					
+
 					score[pointer] = HandEvaluator.rankHand_Java(Helper.mergeByteArrays(rootBoardCards, holeCards[i]));
 					clusterId[pointer] = in[i].readRecord().clusterId;
-					
+
 					pointer++;
 				}
 			}
-			
+
 			if(pointer != numLegalHoleCards) {
 				throw new RuntimeException();
 			}
-			
+
 			for(int i = 0; i < (numLegalHoleCards-1); i++) {
 				for(int j = i+1; j < numLegalHoleCards; j++) {
 					if(clusterId[i] == clusterId[j]) {
@@ -155,11 +155,11 @@ public class DoTerminalClusterValuesStep1 {
 			}
 		}
 		System.out.println("   Completed phase in time: " + (System.currentTimeMillis() - tPhase));
-		
+
 		for(int i = 0; i < in.length; i++) {
 			in[i].close();
 		}
-		
+
 		double[][] terminalValues = new double[numClusters][numClusters];
 		for(int i = 0; i < (numClusters-1); i++) {
 			for(int j = i+1; j < numClusters; j++) {
@@ -168,13 +168,13 @@ public class DoTerminalClusterValuesStep1 {
 				terminalValues[i][j] /= 2;
 			}
 		}
-		
+
 		for(int i = 0; i < numClusters; i++) {
 			for(int j = 0; j < numClusters; j++) {
 				System.out.println("[" + i + "," + j + "] = " + terminalValues[i][j]);
 			}
 		}
-		
+
 		// output terminalValues[][] to file
 		WriteBinaryTerminalClusterValues.writeTerminalMatrix(
 				ROOT_OUTPUT_DIR + "terminal_values_" + numBoardCards,

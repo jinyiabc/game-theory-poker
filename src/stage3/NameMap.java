@@ -25,48 +25,48 @@ public class NameMap implements Serializable {
 	public Map shortToLong = new HashMap();
 	int nextShortName;
 	public final int emptySequenceName;
-	
+
 //	public static NameMap getNameMapP1() {
 //		if(singletonNameMapP1 == null) {
 //			singletonNameMapP1 = new NameMap();
 //		}
 //		return singletonNameMapP1;
 //	}
-//	
+//
 //	public static NameMap getNameMapP2() {
 //		if(singletonNameMapP2 == null) {
 //			singletonNameMapP2 = new NameMap();
 //		}
 //		return singletonNameMapP2;
 //	}
-	
+
 	public NameMap() {
 		nextShortName = 0;
 		emptySequenceName = getShort(InfoString.emptyInfoString, true);
 	}
-	
+
 	public int numUniqueNames() {
 		return nextShortName;
 	}
-	
+
 	public void printLongToShort() {
 		for(Iterator i = longToShort.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry entry = (Map.Entry) i.next();
 			System.out.println(entry.getKey() + " --> " + entry.getValue());
 		}
 	}
-	
+
 	public InfoString getLong(int x) {
-		return (InfoString) shortToLong.get(new Integer(x));
+		return (InfoString) shortToLong.get( Integer.valueOf(x));
 	}
-	
+
 	public int getShort(InfoString longName, boolean addIfAbsent) {
 		Integer shortName = (Integer) longToShort.get(longName);
 		int intShortName;
 		if(shortName == null) {
 			if(addIfAbsent) {
 				intShortName = nextShortName++;
-				shortName = new Integer(intShortName);
+				shortName = Integer.valueOf(intShortName);
 				longToShort.put(longName, shortName);
 				shortToLong.put(shortName, longName);
 			} else {

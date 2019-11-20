@@ -19,38 +19,38 @@ import _misc.Helper;
 
 public class DoShowdowns {
 
-	private static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+	private static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 		"stage1" + Constants.dirSep + "5" + Constants.dirSep;
-	
+
 	public final static int NUM_HOLE_HANDS = Constants.choose(Card.NUM_CARDS-5, 2);
-	
+
 	private static final int MAX_SIMULT_FILES_OPEN = Constants.choose(Card.NUM_CARDS, 2);
-	
+
 	public static void main(String[] args) {
         try {
-        	
+
 			// ------------------------------------------------------------
 			// load up all of the output files
 			// ------------------------------------------------------------
-			WriteBinaryScoreStream[][] out = 
+			WriteBinaryScoreStream[][] out =
 				new WriteBinaryScoreStream[Card.NUM_CARDS][Card.NUM_CARDS];
-			
+
 			for(int i = 0; i < (Card.NUM_CARDS-1); i++) {
 				for(int j = i+1; j < Card.NUM_CARDS; j++) {
-					String path = ROOT_OUTPUT_DIR + new Integer(i).toString() + "_" +  new Integer(j).toString();
+					String path = ROOT_OUTPUT_DIR +  Integer.valueOf(i).toString() + "_" +  Integer.valueOf(j).toString();
 					Helper.prepFilePath(path);
 	        		out[i][j] = new WriteBinaryScoreStream(
-	        				path, 5, new byte[] {(byte) i, (byte) j}, 
+	        				path, 5, new byte[] {(byte) i, (byte) j},
 							Helper.getBufferSize(MAX_SIMULT_FILES_OPEN));
 				}
 			}
-			
+
 
 			// ------------------------------------------------------------
 			// loop through all final board card configs, write out scores
 			// for each legal hand card combo
 			// ------------------------------------------------------------
-    		
+
 			byte[] boardCards = new byte[5];
 			byte[] holeArray;
 			Combinations boardCardsIterator = new Combinations(Card.ALLCARDSINDEX, 5);
@@ -64,10 +64,10 @@ public class DoShowdowns {
 				if (progressCounter % 12995 == 0) {
 					System.out.println ((System.currentTimeMillis() - timer1) + ": " + (progressCounter / 2598960) + "% done");
 				}
-				
+
 				// get 5 board cards
 				boardCards = boardCardsIterator.nextElement();
-				
+
             	// figure out possible hole cards
 				Combinations holeCards = new Combinations(
 						Helper.getRemainingCards(boardCards), 2);
@@ -84,13 +84,13 @@ public class DoShowdowns {
 				byte b4[] = new byte[NUM_HOLE_HANDS];
 				byte b5[] = new byte[NUM_HOLE_HANDS];
 				int doneCardPointer = 0;
-				
-				// iterate over each possible hole card combo, 
+
+				// iterate over each possible hole card combo,
 				// assign score, winCount, tieCount, and loseCount
 				while(holeCards.hasMoreElements()) {
 					holeArray = holeCards.nextElement();
 					handScore = HandEvaluator.rankHand_Java(Helper.mergeByteArrays(boardCards, holeArray));
-					
+
 					for(int i = 0; i < doneCardPointer; i++) {
 						if(
 								(doneCard1[i] != holeArray[0]) &&
@@ -117,11 +117,11 @@ public class DoShowdowns {
 					doneCard2[doneCardPointer] = holeArray[1];
 					doneCardPointer++;
 				}
-				
+
 				if(doneCardPointer != NUM_HOLE_HANDS) {
 					throw new RuntimeException();
 				}
-				
+
 				// we're still in a single loop of one set of board cards
 
 				for(int i = 0; i < NUM_HOLE_HANDS; i++) {
@@ -130,7 +130,7 @@ public class DoShowdowns {
 					out[doneCard1[i]][doneCard2[i]].putScore(countBasedScore);
 				}
 			}
-			
+
 			// outside of all loops now -- we're done
 			for(int i = 0; i < (Card.NUM_CARDS-1); i++) {
 				for(int j = i+1; j < Card.NUM_CARDS; j++) {
@@ -139,9 +139,9 @@ public class DoShowdowns {
 					}
 				}
 			}
-			
+
 			System.out.println(System.currentTimeMillis() - timer1);
-			
+
 	    } catch (IOException e) {
 	    	System.out.println(e.getMessage());
 	    	System.out.println(e.getCause());

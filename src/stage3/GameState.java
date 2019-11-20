@@ -22,10 +22,10 @@ import java.io.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class GameState {
-	
+
 	// Game history
 	//	 take advantage of depth-first enum.
-	private static InfoString infoP1; 
+	private static InfoString infoP1;
 	private static InfoString infoP2;
 	private static InfoString lastChoiceP1;
 	private static InfoString lastChoiceP2;
@@ -40,27 +40,27 @@ public class GameState {
 	private static ConstraintMatrix constraintP2;
 	private static NameMap nameMapP1;
 	private static NameMap nameMapP2;
-	
+
 	// handled before releasing name maps
 	public static int numRows = Integer.MIN_VALUE;
 	public static int numCols = Integer.MIN_VALUE;
 
 	public static int startNumBoardCards = Integer.MIN_VALUE; // recursion terminating condition
 	public static int endNumBoardCards = Integer.MIN_VALUE; // recursion terminating condition
-	
+
 	public static long leafCount = Long.MIN_VALUE;
 	public static long nnzLeafCount = Long.MIN_VALUE; // nnz = num. of nonzero (notation from MATLAB)
-	
+
 	public static void initStaticState(int startNumBoardCards, int endNumBoardCards, float initialPotP1, float initialPotP2) {
-		infoP1 = new InfoString(new byte[0]); 
+		infoP1 = new InfoString(new byte[0]);
 		infoP2 = new InfoString(new byte[0]);
 		lastChoiceP1 = new InfoString(new byte[0]);
 		lastChoiceP2 = new InfoString(new byte[0]);
-		potP1 = initialPotP1; 
+		potP1 = initialPotP1;
 		potP2 = initialPotP2;
 		chanceSoFar = 1;
 		clusters = new byte[] {-1, -1};
-		
+
 		constraintP1 = new ConstraintMatrix();
 		constraintP2 = new ConstraintMatrix();
 		nameMapP1 = new NameMap();
@@ -70,12 +70,12 @@ public class GameState {
 		GameState.endNumBoardCards = endNumBoardCards;
 		numRows = -1;
 		numCols = -1;
-		
+
 		leafCount = 0;
 		nnzLeafCount = 0;
 	}
-	
-	
+
+
 
 	public byte bcCount; // if this is a chance node, this is bcCount after node
 	public boolean isChance;
@@ -92,17 +92,17 @@ public class GameState {
 
 	public InfoString infoSetNameP1 = new InfoString(new byte[0]); // these init values will be overwriten for everyone
 	public InfoString infoSetNameP2 = new InfoString(new byte[0]);  // other than the root (empty sequence)
-	
+
 	public static void releaseNameMaps() {
 		ensureInitRoots();
 		ensureNumRowsAndColsPopulated();
 		nameMapP1 = null;
 		nameMapP2 = null;
 	}
-	
+
 	public void expand() throws IOException {
 		List nextStates = Agenda.getNextGameStates(this);
-		
+
 		boolean isP1Choosing = false;
 		boolean isP2Choosing = false;
 		byte choiceType = ((GameState)nextStates.get(0)).newInfoP1;
@@ -113,18 +113,18 @@ public class GameState {
 				isP2Choosing = true;
 			}
 		}
-		
-		
+
+
 		InfoString lastChoiceP1Backup = lastChoiceP1.duplicate();
 		InfoString lastChoiceP2Backup = lastChoiceP2.duplicate();
-		
+
 		int[] childNames = new int[nextStates.size()];
-		
+
 		for(int i = 0; i < nextStates.size(); i++) {
 			GameState nextState = (GameState) nextStates.get(i);
 			nextState.infoSetNameP1 = this.infoSetNameP1.push(nextState.newInfoP1);
 			nextState.infoSetNameP2 = this.infoSetNameP2.push(nextState.newInfoP2);
-			
+
 			if(isP1Choosing) {
 				childNames[i] = nameMapP1.getShort(nextState.infoSetNameP1, true);
 				lastChoiceP1 = nextState.infoSetNameP1;
@@ -136,13 +136,13 @@ public class GameState {
 			infoP1 = infoP1.push(nextState.newInfoP1); // commit my child's action to InfoToken log
 			infoP2 = infoP2.push(nextState.newInfoP2); // commit my child's action to InfoToken lo
 
-			if((nextState.potAddP1 > 0 && nextState.potAddP2 > 0) || 
+			if((nextState.potAddP1 > 0 && nextState.potAddP2 > 0) ||
 					nextState.potAddP1 < 0 || nextState.potAddP2 < 0) {
 				throw new RuntimeException();
 			}
 			potP1 += nextState.potAddP1;
 			potP2 += nextState.potAddP2;
-			
+
 			byte[] oldClustersCopy = null;
 			float oldChanceSoFarCopy = Float.NaN;
 			if(nextState.newClusters != null) {
@@ -151,12 +151,12 @@ public class GameState {
 				oldChanceSoFarCopy = chanceSoFar;
 				chanceSoFar *= nextState.chance;
 			}
-			
+
 			if(!nextState.isLeaf) {
 				nextState.expand();
 			} else {
 				// this only occurs on choice nodes
-				
+
 				if(DoGT.writeToDisk) {
 					byte active = -1;
 					if(isP1Choosing) {
@@ -191,27 +191,27 @@ public class GameState {
 						throw new RuntimeException();
 					}
 					leafValue *= chanceSoFar;
-					
+
 					int rowId = nameMapP1.getShort(lastChoiceP1, true);
 					int columnId = nameMapP2.getShort(lastChoiceP2, true);
-					
+
 					if(leafValue != 0) {
 						nnzLeafCount++;
 						rewardMatrixOut.writeRme(rowId, columnId, leafValue);
 					}
 				}
-				
+
 				leafCount++;
-				
+
 
 				if (leafCount % DoGT.fiveThousandths == 0) {
 					System.out.println("  " +
-							(System.currentTimeMillis() - DoGT.tTotal) + 
-							": " + (new Double((double)leafCount / 
+							(System.currentTimeMillis() - DoGT.tTotal) +
+							": " + ( Double.valueOf((double)leafCount / 
 							DoGT.numLeafNodes)).toString() + "% done");
 				}
-				
-				
+
+
 				// write out results
 //				System.out.println("pot: {" + potP1 + ", " + potP2 + "}");
 //				if(isP1Choosing) {
@@ -224,16 +224,16 @@ public class GameState {
 //				System.out.println("Adjusted leafValue: " + (leafValue * chanceSoFar));
 //				System.out.println("");
 			}
-			
+
 			infoP1 = infoP1.pop();
 			infoP2 = infoP2.pop();
 
 			lastChoiceP1 = lastChoiceP1Backup;
 			lastChoiceP2 = lastChoiceP2Backup;
-			
+
 			potP1 -= nextState.potAddP1;
 			potP2 -= nextState.potAddP2;
-			
+
 			if(nextState.newClusters != null) {
 				clusters = oldClustersCopy;
 				chanceSoFar = oldChanceSoFarCopy;
@@ -243,10 +243,10 @@ public class GameState {
 		if(isP1Choosing) {
 			constraintP1.addConstraint(nameMapP1.getShort(lastChoiceP1, true), childNames);
 		} else if(isP2Choosing) {
-			constraintP2.addConstraint(nameMapP2.getShort(lastChoiceP2, true), childNames);		
+			constraintP2.addConstraint(nameMapP2.getShort(lastChoiceP2, true), childNames);
 		}
 	}
-	
+
 
 	public GameState(byte bcCount, byte brDepth, byte numRaises, boolean isChance, float chance, boolean isLeaf,
 			byte newInfoP1, byte newInfoP2, float potAddP1, float potAddP2, byte[] newClusters) {
@@ -262,27 +262,27 @@ public class GameState {
 		this.potAddP2 = potAddP2;
 		this.newClusters = newClusters;
 	}
-	
+
 	public GameState(byte bcCount, byte brDepth, byte numRaises, boolean isChance, float chance, boolean isLeaf,
 			byte newInfoForAll, float potAddP1, float potAddP2, byte[] newClusters) {
-		this(bcCount, brDepth, numRaises, isChance, chance, isLeaf, newInfoForAll, 
+		this(bcCount, brDepth, numRaises, isChance, chance, isLeaf, newInfoForAll,
 				newInfoForAll, potAddP1, potAddP2, newClusters);
 	}
-	
+
 //	private static void ensureRewardMatrixMoved() {
 //		if(arrRewardMatrix != null) {
 //			return;
 //		}
-//		
+//
 //		if(leafCount != DoGT.numLeafNodes) {
 //			throw new RuntimeException();
 //		}
-//		
+//
 //		arrRewardMatrix = new RewardMatrixElement[rewardMatrix.size()];
 //		for(int i = 0; i < arrRewardMatrix.length; i++) {
 //			arrRewardMatrix[i] = (RewardMatrixElement) rewardMatrix.get(i);
 //		}
-//		
+//
 //		rewardMatrix = null;
 //		System.runFinalization();
 //		System.gc();
@@ -290,13 +290,13 @@ public class GameState {
 //		System.gc();
 //		System.gc();
 //	}
-	
+
 //	public static RewardMatrixElement[] getRewardMatrix() {
 //		ensureRewardMatrixMoved();
-//		
+//
 //		return arrRewardMatrix;
 //	}
-	
+
 	public static void ensureInitRoots() {
 		if(!constraintP1.rootInitialized) {
 			constraintP1.addConstraint(-1, new int[] {nameMapP1.emptySequenceName});
@@ -307,26 +307,26 @@ public class GameState {
 			constraintP2.rootInitialized = true;
 		}
 	}
-	
+
 	private static void ensureNumRowsAndColsPopulated() {
 		if(numRows == -1) {
 			numRows = nameMapP1.numUniqueNames();
 			numCols = nameMapP2.numUniqueNames();
 		}
 	}
-	
+
 	public static ConstraintMatrix[] getConstraintMatrices() {
 		ensureInitRoots();
 		return new ConstraintMatrix[] { constraintP1, constraintP2 };
 	}
-	
+
 	public static int[] getNumRowsAndCols() {
 		ensureNumRowsAndColsPopulated();
 		return new int[] {numRows, numCols};
 	}
-	
+
 	public static NameMap[] getNameMaps() {
 		return new NameMap[] { nameMapP1, nameMapP2 };
 	}
-	
+
 }

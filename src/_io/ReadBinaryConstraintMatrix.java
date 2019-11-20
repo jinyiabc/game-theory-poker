@@ -25,19 +25,19 @@ public class ReadBinaryConstraintMatrix {
 
 		FileInputStream fis = new FileInputStream(fileName);
 		DataInputStream dis = new DataInputStream(fis);
-		
+
 		// read and verify format ID
 		short formatID = dis.readShort();
 		if(formatID != Constants.vidConstraintMatrix) {
 			throw new RuntimeException();
 		}
-		
+
 		// read header from file
 		short header[] = new short[10];
 		for(int i = 0; i < 10; i++) {
 			header[i] = dis.readShort();
 		}
-		
+
 		// process header
 		int maxNumBoardCards = header[4];
 		int numUniqueNames = header[6] & 0xFFFF; // do the AND so it's unsigned
@@ -45,17 +45,17 @@ public class ReadBinaryConstraintMatrix {
 		numUniqueNames |= header[5] & 0xFFFF;
 		if(numUniqueNames <= 0) {
 			throw new RuntimeException();
-			
+
 		}
 
 		ObjectInputStream ois = new ObjectInputStream(dis);
-		
+
 		ConstraintMatrix cm = (ConstraintMatrix) ois.readObject();
-		
+
 		ois.close();
 		dis.close();
 		fis.close();
 
-		return new Object[] {cm, new Integer(maxNumBoardCards), new Integer(numUniqueNames)};
+		return new Object[] {cm, Integer.valueOf(maxNumBoardCards),  Integer.valueOf(numUniqueNames)};
 	}
 }

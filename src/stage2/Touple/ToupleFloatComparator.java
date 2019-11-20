@@ -15,9 +15,9 @@ import java.util.Map;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class ToupleFloatComparator implements Comparator {
-
-	public int compare(Object arg0, Object arg1) {
+public class ToupleFloatComparator implements Comparator<ToupleFloatInt> {
+	@Override
+	public int compare(ToupleFloatInt arg0, ToupleFloatInt arg1) {
 		// these are ToupleFloatInts...sort on float value
 		float thisV = ((ToupleFloatInt) arg0).o1;
 		float thatV = ((ToupleFloatInt) arg1).o1;

@@ -15,20 +15,17 @@ import _game.Card;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Constants {
-	
-	public final static String dirSep = 
+
+	public final static String dirSep =
 		(System.getProperty("os.name").substring(0, 5).equals("Windo") ?
 				"\\" :
 				"/");
 
-	public final static String DATA_FILE_REPOSITORY = 
-		(System.getProperty("os.name").substring(0, 5).equals("Windo") ?
-			"z:" + Constants.dirSep + "adam" + Constants.dirSep + "tmp" + Constants.dirSep + "poker_data" + Constants.dirSep + Card.GAME_NAME + "" + Constants.dirSep :
-			"/net1/poker/poker_data/" + Card.GAME_NAME + "/");
-	
-	
+	public final static String DATA_FILE_REPOSITORY ="/Users/jinyi/Desktop/game-theory-poker/poker_data/14-card holdem/";
+
+
 	public final static int FILE_HEADER_LENGTH_BYTES = 22;
-	
+
 	// versions
 	public final static short vidScoreOnly_holeCardsConstant_boardCardsImplicit = 1;
 	public final static short vidScoreMap_holeCardsConstant_boardCardsImplicit = 11;
@@ -53,26 +50,26 @@ public class Constants {
 
 	public final static int TOTAL_BUFFER_AVAILABLE = 300000000; // 300MB
 	public final static int MAX_SINGLE_FILE_BUFFER = 10000000; // 10MB
-	
+
 	public final static int HEADER_SIZE = 22;
-	
+
 	public static int choose(int n, int k) {
 		// assume k small (< 10)
 		// assume n not too bad (< 60)
-		
+
 		if(k > 5 || n > 52) {
 			throw new RuntimeException("not getting a legal answer");
 		}
-		
+
 		int answer = 1;
 		for(int i = n-k+1; i <= n; i++) {
 			answer *= i;
 		}
-		
+
 		return answer/factTo12[k];
 	}
-	
-	
+
+
 	public final static int[] factTo12 = new int[]
 												 {
 			1, // define fact(0) = 1
@@ -90,5 +87,5 @@ public class Constants {
 			479001600};
 
 	public final static String[] subtreeNames = new String[] {"a", "b", "c", "d", "e", "f", "g"};
-	
+
 }
