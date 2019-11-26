@@ -1,0 +1,148 @@
+!  Parameter file for multiply predictor - corrector method
+
+BEGIN                     ! Begin marker
+
+! Problem name and MPS specifications
+
+NAME      =               ! Problem name, max. 36 characters
+MAXMN     =  250000.      ! Upper bound for M+N
+MINMAX    =  1.           !  =1. (mininmize)        =-1. (maximize)
+OUTPUT    =  1           ! Output level 0 :only statistic, 1 :solution
+OBJNAM    =               ! Objective function name  (first N type row)
+RHSNAM    =               ! RHS   name   (first)
+BNDNAM    =               ! BOUND name   (first)
+RNGNAM    =               ! RANGE name   (first)
+BIGBOUND  = 1.0d+15       ! Skip bounds and ranges exceeding this limit
+ITERLOG   =  3.           ! 0:no report, 1:only display, 2:only logfile, 3:both
+
+! Density handling and factorization type parameters
+
+MAXDENSE  = 0.15          ! maximal dense columns rate
+DENSGAP   = 3.00          ! density gap parameter
+DENSLEN   = 10.           ! Value for the possibily dense columns
+SUPDENS   = 300.          ! 'Super' dense column length
+SETLAM    = 0.            !  0 : density gap heuristic, ( AAT )
+                          ! -1 : use LAM, ( AAT )
+                          !  1 : density gap heuristic, factorize
+! Supernode parameters
+
+PSUPNODE  =  4.           ! Primer supernode length
+SSUPNODE  =  4.           ! Secunder supernode length
+MAXSNZ    = 99999999.     ! Maximum nonzeros in one supernode
+
+! Pivot and factorization parameters
+
+TPIV1     = 1.0D-03       ! First  threshold pivot tolerance
+TPIV2     = 1.0D-08       ! Second threshold pivot tolerance
+TABS      = 1.0D-12       ! Absolute pivot tolerance for the first factorization
+TRABS     = 1.0D-15       ! Absolute pivot tolerance during the algorithm
+LAM       = 1.1D-05       ! Minimum value of lambda
+TFIND     = 25.           ! Pivot search loop count
+ORDERING  = 2.0           !  1.0 : Minimum degree
+                          !  2.0 : Minimum fill-in
+                          !  3.0 : Minimum fill-in for augmented system
+                          ! other: No ordering
+
+! Stopping criterion parameters
+
+TOPT1     = 1.0D-08       ! Relative duality gap tolerance
+TOPT2     = 1.0D-16       ! Average complementary gap tolerance
+TFEAS1    = 1.0D-07       ! Relative primal feasibility tolerance
+TFEAS2    = 1.0D-07       ! Relative dual   feasibility tolerance
+FEAS1     = 1.0D-02       ! Absolute primal feasibility tolerance
+FEAS2     = 1.0D-02       ! Absolute dual   feasibility tolerance
+PINFS     = 1.0D-06       ! Minimum primal  infeasibility reduction
+DINFS     = 1.0D-06       ! Minimal dual    infeasibility reduction
+INFTOL    = 1.0D+04
+TSDIR     = 1.0D-16       ! Search direction maximum norm tolerance
+MAXITER   = 99.           ! Iteration limit
+
+! Numerical tolerances
+
+TPLUS     = 1.0D-10       ! Relative addition tolerance
+TZER      = 1.0D-35       ! Relative zero tolerance
+
+! Iterative refinement tolerances
+
+TRESX     = 1.0D-09       ! Acceptable residual in the primal space
+TRESY     = 1.0D-09       ! Acceptable residual in the dual space
+MAXREF    = 5.            ! Maximal number of refinement
+
+! Scaling parameters      ! Scaling methods:
+                          !  0. : No scaling
+                          !  1. : Simple scaling to rowmax=1, colmax=1
+                          !  2. : Geometric mean scaling + simple scaling
+                          !  3. : Curtis-Reid's algorithm + simple scaling
+                          !  4. : Geometric mean scaling only
+                          !  5. : Curtis-Reid's algorithm only
+OBJNORM   = 1.0D+02       ! Scaling the objective to this max. norm
+RHSNORM   = 0.0D+00       ! Scaling the rhs to this max. norm
+MINDIFF   = 1.0D+00       ! Minimum treshold for exit from scaling
+                          ! BEFORE AGGREGATOR
+SPASSES1   = 5.           ! Maximum number of passes ( <128 )
+SMETHOD1   = 2.           ! Scaling method
+                          ! AFTER AGGREGATOR
+SPASSES2   = 0.           ! Maximum number of passes ( <128 )
+SMETHOD2   = 0.           ! Scaling method
+
+
+! Complementary gap improwing  (use it in panic situation only)
+
+COMPLIMIT = 1.0d+00       ! Improve if compl. < COMPLIMIT
+COMPPAR   = 1.0d-05       ! Improve if compl. < COMPPAR * AVERAGE compl.
+
+! Predictor-corrector and barrier parameters
+
+STOPCOR   = 1.01D+00      ! Correction stop parameter
+BARSET    = 2.50D-01      ! Barrier set-up limit
+BARGROW   = 1.00D+02      ! Barrier grow controll
+BARMIN    = 1.00D-10      ! Minimum barrier threshold
+MINCORR   = 1.            ! Number of the minimum corrections
+MAXCORR   = 1.            ! Number of the maximum corrections
+INIBARR   = 0.            ! Use initial barrier parameter
+
+! Centrality corrections parameters
+
+TARGET    = 9.0D-02       ! Trial steplength improvement
+TSMALL    = 2.0D-01       ! Small complementarity bound
+TLARGE    = 2.0D+01       ! Large compelmentarity bound
+CENTER    = 5.0D+00       ! Centrality force
+CORSTOP   = 1.01D+00      ! Correction stop parameter
+MINCCORR  = 0.            ! Number of the minimum corrections
+MAXCCORR  = 9.            ! Number of the maximum corrections
+
+! Steplenth parameters
+
+PRDARE    = 0.999D+00     ! Maximal primal steplength
+DUDARE    = 0.999D+00     ! Maximal dual   steplength
+
+! Variable fixing tolerances
+
+TFIXVAR   = 1.0D-16       ! Variable reset parameter
+TFIXSLACK = 1.0D-16       ! Slack reset parameter
+DSLACKLIM = 1.0D-16       ! Dual slack variable limit
+
+! Starting point paramerers
+
+PRMIN     =   100.00      ! Minimum initial variable value
+UPMAX     = 50000.00      ! Maximum initial variable value
+DUMIN     =   100.00      ! Minimum initial slack value
+SMETHOD   =  2.           ! Starting method  (1. or 2.)
+SAFEMET   = -3.           ! Safe method  (1. 2. or 3.)
+REGULARIZE=  0.           ! Regularization (introducing dummy ranges)
+EXPLSLACK =  0.           ! Include slack as variables
+PRESOLV   = 511.          !   1 : singleton row check
+                          !   2 : singleton column check
+                          !   4 : min/max row value check
+                          !   8 : cheap dual test
+                          !  16 : dual check
+                          !  32 : primal bound check and relaxation
+                          !  64 : search identical variables
+                          ! 128 : elimination of free variables
+                          ! 256 : sparser
+                          ! 512 : extended dual test
+VARADD    = 1.0D-12
+SLACKADD  = 1.0D+16
+SCFREE    = 1.0D-06
+
+END                       ! End marker

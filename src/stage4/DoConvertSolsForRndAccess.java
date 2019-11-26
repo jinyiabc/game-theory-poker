@@ -22,15 +22,15 @@ import java.io.*;
  */
 public class DoConvertSolsForRndAccess {
 
-	
-	public static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	public static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 		"stage3" + Constants.dirSep;
-	
-	public static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	public static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 		"stage3" + Constants.dirSep;
-	
+
 	private static final int MAX_SIMULT_FILES_OPEN = 1;
-	
+
 	private static final boolean deleteOld = true;
 
 	public static void main(String[] args) throws Exception {
@@ -46,15 +46,15 @@ public class DoConvertSolsForRndAccess {
 		} else {
 			subtreesToWrite = args;
 		}
-		
+
 		for(int ixSubtree = 0; ixSubtree < subtreesToWrite.length; ixSubtree++) {
 			System.out.println("CONVERTING SOLUTION FILES FOR SUBTREE " + subtreesToWrite[ixSubtree]);
-			
+
 			double tSubtree = System.currentTimeMillis();
-			
+
 			String inDir = ROOT_INPUT_DIR + subtreesToWrite[ixSubtree] + Constants.dirSep;
 			String outDir = ROOT_OUTPUT_DIR + subtreesToWrite[ixSubtree] + Constants.dirSep;
-			
+
 			// solution files
 			for(int p = 0; p < 2; p++) {
 				boolean isP1 = (p == 0);
@@ -62,7 +62,7 @@ public class DoConvertSolsForRndAccess {
 				String awName = inDir + "game." + player + ".sol.obj";
 				Map actionWeights = ReadBinarySolutionMap.getSolutionMap(awName, isP1);
 				// Integers => Floats
-				List lstActionWeights = new ArrayList(actionWeights.size());
+				ArrayList lstActionWeights = new ArrayList(actionWeights.size());
 				for(Iterator i = actionWeights.entrySet().iterator(); i.hasNext(); ) {
 					lstActionWeights.add(i.next());
 				}
@@ -71,10 +71,10 @@ public class DoConvertSolsForRndAccess {
 				if(deleteOld && new File(outName).exists()) {
 					new File(outName).delete();
 				}
-				WriteBinaryActionWeightList.writeSolutionList(lstActionWeights, 
+				WriteBinaryActionWeightList.writeSolutionList(lstActionWeights,
 						outName, Helper.getBufferSize(MAX_SIMULT_FILES_OPEN));
 			}
-			
+
 			// name maps
 			for(int p = 0; p < 2; p++) {
 				boolean isP1 = (p == 0);
@@ -87,10 +87,10 @@ public class DoConvertSolsForRndAccess {
 				int maxLength = Integer.MIN_VALUE;
 				for(Iterator i = longToShort.entrySet().iterator(); i.hasNext(); ) {
 					Map.Entry record = (Map.Entry) i.next();
-					
+
 					InfoString longName = (InfoString) record.getKey();
 					lstInfoStrings.add(longName); // we'll get the short names at the end
-					
+
 					if(longName.arr.length > maxLength) {
 						maxLength = longName.arr.length;
 					}
@@ -100,17 +100,17 @@ public class DoConvertSolsForRndAccess {
 				if(deleteOld && new File(outName).exists()) {
 					new File(outName).delete();
 				}
-				WriteBinaryNameList.writeNameList(lstInfoStrings, nm, maxLength, 
-						outName, Helper.getBufferSize(MAX_SIMULT_FILES_OPEN));			
+				WriteBinaryNameList.writeNameList(lstInfoStrings, nm, maxLength,
+						outName, Helper.getBufferSize(MAX_SIMULT_FILES_OPEN));
 			}
-			
+
 			System.out.println("done subtree in time: " + (System.currentTimeMillis() - tSubtree));
 		}
-		
+
 		System.out.println("");
 		System.out.println("done entire program in time: " + (System.currentTimeMillis() - tTotal));
 	}
-	
+
 	public static class CompareWeights implements Comparator {
 		public int compare(Object o1, Object o2) {
 			// assume correct types
@@ -119,13 +119,13 @@ public class DoConvertSolsForRndAccess {
 			return i1.compareTo(i2);
 		}
 	}
-	
+
 	public static class CompareInfoStrings implements Comparator {
 		public int compare(Object o1, Object o2) {
 			// assume correct types
 			byte[] b1 = ((InfoString) o1).arr;
 			byte[] b2 = ((InfoString) o2).arr;
-			
+
 			// higher array indices are more significant (big endian)
 			//  (therefore shorter => smaller)
 			if(b1.length < b2.length) {
@@ -144,5 +144,5 @@ public class DoConvertSolsForRndAccess {
 			}
 		}
 	}
-	
+
 }

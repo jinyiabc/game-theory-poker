@@ -32,6 +32,7 @@ public class GameState {
 	public static float potP1 = Float.NaN;
 	public static float potP2 = Float.NaN;
 	public static float chanceSoFar = Float.NaN;
+	public static float leafValue = Float.NaN;
 	public static byte[] clusters;
 
 	// the results of all the game tree execution
@@ -102,6 +103,9 @@ public class GameState {
 
 	public void expand() throws IOException {
 		List nextStates = Agenda.getNextGameStates(this);
+		// System.out.println("chanceSoFar:"+this.chanceSoFar);
+		// chanceSoFar = this.chanceSoFar;
+		// System.out.println("chanceSoFar:"+chanceSoFar);
 
 		boolean isP1Choosing = false;
 		boolean isP2Choosing = false;
@@ -124,6 +128,7 @@ public class GameState {
 			GameState nextState = (GameState) nextStates.get(i);
 			nextState.infoSetNameP1 = this.infoSetNameP1.push(nextState.newInfoP1);
 			nextState.infoSetNameP2 = this.infoSetNameP2.push(nextState.newInfoP2);
+
 
 			if(isP1Choosing) {
 				childNames[i] = nameMapP1.getShort(nextState.infoSetNameP1, true);
@@ -149,8 +154,14 @@ public class GameState {
 				oldClustersCopy = new byte[] {clusters[0], clusters[1]};
 				clusters = nextState.newClusters;
 				oldChanceSoFarCopy = chanceSoFar;
-				chanceSoFar *= nextState.chance;
-			}
+				if(Float.isNaN(nextState.chance)){
+					chanceSoFar *= 1;
+				} else {
+					chanceSoFar *= nextState.chance;
+				}
+			  // System.out.println("chance: " + nextState.chance + ",chanceSoFar:" + chanceSoFar);
+			  // System.out.println("");
+		  }
 
 			if(!nextState.isLeaf) {
 				nextState.expand();
@@ -190,6 +201,8 @@ public class GameState {
 					} else {
 						throw new RuntimeException();
 					}
+
+					// System.out.println(String.format("%f %f",leafValue, chanceSoFar));
 					leafValue *= chanceSoFar;
 
 					int rowId = nameMapP1.getShort(lastChoiceP1, true);
@@ -198,7 +211,21 @@ public class GameState {
 					if(leafValue != 0) {
 						nnzLeafCount++;
 						rewardMatrixOut.writeRme(rowId, columnId, leafValue);
+						// System.out.println(String.format("%s %s %f",rowId, columnId, leafValue));
 					}
+
+					// // write out results
+					// System.out.println("pot: {" + potP1 + ", " + potP2 + "}");
+					// if(isP1Choosing) {
+					// 	System.out.println("infoSets: [" + nextState.infoSetNameP1 + ", " + infoSetNameP2 + "]");
+					// } else {
+					// 	System.out.println("infoSets: [" + infoSetNameP1 + ", " + nextState.infoSetNameP2 + "]");
+					// }
+					// System.out.println("chance: " + chanceSoFar);
+					// System.out.println("leafValue: " + leafValue);
+					// System.out.println("Adjusted leafValue: " + (leafValue * chanceSoFar));
+					// System.out.println("");
+
 				}
 
 				leafCount++;
@@ -207,22 +234,22 @@ public class GameState {
 				if (leafCount % DoGT.fiveThousandths == 0) {
 					System.out.println("  " +
 							(System.currentTimeMillis() - DoGT.tTotal) +
-							": " + ( Double.valueOf((double)leafCount / 
+							": " + ( Double.valueOf((double)leafCount /
 							DoGT.numLeafNodes)).toString() + "% done");
 				}
 
 
-				// write out results
-//				System.out.println("pot: {" + potP1 + ", " + potP2 + "}");
-//				if(isP1Choosing) {
-//					System.out.println("infoSets: [" + nextState.infoSetNameP1 + ", " + infoSetNameP2 + "]");
-//				} else {
-//					System.out.println("infoSets: [" + infoSetNameP1 + ", " + nextState.infoSetNameP2 + "]");
-//				}
-//				System.out.println("chance: " + chanceSoFar);
-//				System.out.println("leafValue: " + leafValue);
-//				System.out.println("Adjusted leafValue: " + (leafValue * chanceSoFar));
-//				System.out.println("");
+				// // write out results
+				// System.out.println("pot: {" + potP1 + ", " + potP2 + "}");
+				// if(isP1Choosing) {
+				// 	System.out.println("infoSets: [" + nextState.infoSetNameP1 + ", " + infoSetNameP2 + "]");
+				// } else {
+				// 	System.out.println("infoSets: [" + infoSetNameP1 + ", " + nextState.infoSetNameP2 + "]");
+				// }
+				// System.out.println("chance: " + chanceSoFar);
+				// System.out.println("leafValue: " + leafValue);
+				// System.out.println("Adjusted leafValue: " + (leafValue * chanceSoFar));
+				// System.out.println("");
 			}
 
 			infoP1 = infoP1.pop();

@@ -209,7 +209,7 @@ public class DoWriteLP {
 			// retrieve A[i][*] (row vector)
 			// (rewardMatrix is a flattened representation of A[][], sorted on row index)
 			while((rme != null) && (rme.secondDim==i)) {
-
+				// System.out.println(rme);
 				out.addElement(columnName,
 						rewardConstraintPrefix.concat(Integer.toString(rme.firstDim)), rme.value);
 

@@ -74,38 +74,40 @@ So I started working on this during MIT's Independent Activities Period in Janua
 	* note that there are other LP-solvers available.  I just happened to use bpmpd.  The MPS file format is supported by most.
 
 		```
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoPreprocessRm mem-heavy root
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoWriteLP root
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoGT root
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoPreprocessRm mem-heavy root
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoWriteLP root
 		cd /net1/bpmpd
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/root/game.p1.mps rootp1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/root/game.p2.mps rootp2.mps
+		ln -s ./root/game.p1.mps rootp1.mps
+		ln -s ./root/game.p2.mps rootp2.mps
 		rm -f *.out
 		./bpmpd rootp1
-		cp rootp1.out /net1/poker/poker_data/52-5-1.1/stage3/root/game.p1.sol
+cp rootp1.out game.p1.sol
 		./bpmpd rootp2
-		cp rootp2.out /net1/poker/poker_data/52-5-1.1/stage3/root/game.p2.sol
-		cd /net1/poker
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoParseClpOutput root
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoSubtreeGames
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoGT all-subtrees
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoPreprocessRm mem-heavy all-subtrees
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoWriteLP all-subtrees
+cp rootp2.out game.p2.sol
+cd /net1/poker
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoParseClpOutput root
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoSubtreeGames
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoGT all-subtrees
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoPreprocessRm mem-heavy all-subtrees
+java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoWriteLP all-subtrees
 		cd /net1/bpmpd
 		rm -f ???.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/a/game.p1.mps ap1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/a/game.p2.mps ap2.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/b/game.p1.mps bp1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/b/game.p2.mps bp2.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/c/game.p1.mps cp1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/c/game.p2.mps cp2.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/d/game.p1.mps dp1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/d/game.p2.mps dp2.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/e/game.p1.mps ep1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/e/game.p2.mps ep2.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/f/game.p1.mps fp1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/f/game.p2.mps fp2.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/g/game.p1.mps gp1.mps
-		ln -s /net1/poker/poker_data/52-5-1.1/stage3/g/game.p2.mps gp2.mps
+cd "../game-theory-poker/poker_data/14-card holdem/stage3"
+ln -s ./a/game.p1.mps ./a/ap1.mps
+ln -s ./a/game.p2.mps ./a/ap2.mps
+ln -s ./b/game.p1.mps ./b/bp1.mps
+ln -s ./b/game.p2.mps ./b/bp2.mps
+ln -s ./c/game.p1.mps ./c/cp1.mps
+ln -s ./c/game.p2.mps ./c/cp2.mps
+ln -s ./d/game.p1.mps ./d/dp1.mps
+ln -s ./d/game.p2.mps ./d/dp2.mps
+ln -s ./e/game.p1.mps ./e/ep1.mps
+ln -s ./e/game.p2.mps ./e/ep2.mps
+ln -s ./f/game.p1.mps ./f/fp1.mps
+ln -s ./f/game.p2.mps ./f/fp2.mps
+ln -s ./g/game.p1.mps ./g/gp1.mps
+ln -s ./g/game.p2.mps ./g/gp2.mps
 		rm -f *.out
 		./bpmpd ap1
 		./bpmpd ap2
@@ -121,22 +123,22 @@ So I started working on this during MIT's Independent Activities Period in Janua
 		./bpmpd fp2
 		./bpmpd gp1
 		./bpmpd gp2
-		cp ap1.out /net1/poker/poker_data/52-5-1.1/stage3/a/game.p1.sol
-		cp ap2.out /net1/poker/poker_data/52-5-1.1/stage3/a/game.p2.sol
-		cp bp1.out /net1/poker/poker_data/52-5-1.1/stage3/b/game.p1.sol
-		cp bp2.out /net1/poker/poker_data/52-5-1.1/stage3/b/game.p2.sol
-		cp cp1.out /net1/poker/poker_data/52-5-1.1/stage3/c/game.p1.sol
-		cp cp2.out /net1/poker/poker_data/52-5-1.1/stage3/c/game.p2.sol
-		cp dp1.out /net1/poker/poker_data/52-5-1.1/stage3/d/game.p1.sol
-		cp dp2.out /net1/poker/poker_data/52-5-1.1/stage3/d/game.p2.sol
-		cp ep1.out /net1/poker/poker_data/52-5-1.1/stage3/e/game.p1.sol
-		cp ep2.out /net1/poker/poker_data/52-5-1.1/stage3/e/game.p2.sol
-		cp fp1.out /net1/poker/poker_data/52-5-1.1/stage3/f/game.p1.sol
-		cp fp2.out /net1/poker/poker_data/52-5-1.1/stage3/f/game.p2.sol
-		cp gp1.out /net1/poker/poker_data/52-5-1.1/stage3/g/game.p1.sol
-		cp gp2.out /net1/poker/poker_data/52-5-1.1/stage3/g/game.p2.sol
+cp game.p1.out game.p1.sol
+cp game.p2.out game.p2.sol
+		cp bp1.out ./b/game.p1.sol
+		cp bp2.out ./b/game.p2.sol
+		cp cp1.out ./c/game.p1.sol
+		cp cp2.out ./c/game.p2.sol
+		cp dp1.out ./d/game.p1.sol
+		cp dp2.out ./d/game.p2.sol
+		cp ep1.out ./e/game.p1.sol
+		cp ep2.out ./e/game.p2.sol
+		cp fp1.out ./f/game.p1.sol
+		cp fp2.out ./f/game.p2.sol
+		cp gp1.out ./g/game.p1.sol
+		cp gp2.out ./g/game.p2.sol
 		cd /net1/poker
-		java -Xms400M -Xmx1700M -Xincgc -classpath bin stage3.DoParseClpOutput all-subtrees
+java -Xms400M -Xmx1700M -XX:+UseG1GC stage3.DoParseClpOutput all-subtrees
 		```
 
 

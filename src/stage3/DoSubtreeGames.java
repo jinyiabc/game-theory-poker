@@ -20,18 +20,18 @@ import java.io.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class DoSubtreeGames {
-	
-	public static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	public static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 			"stage2" + Constants.dirSep;
-	
-	public static final String ROOT_GAME_INPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	public static final String ROOT_GAME_INPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 			"stage3" + Constants.dirSep + "root" + Constants.dirSep;
-	
-	public static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
+
+	public static final String ROOT_OUTPUT_DIR = Constants.DATA_FILE_REPOSITORY +
 			"stage3" + Constants.dirSep;
-	
+
 	private static final int MAX_SIMULT_FILES_OPEN = 4;
-	
+
 	private final static byte[] bytNums = new byte[] {0, 1, 2, 3, 4, 5};
 
 	public static double[][] startPDT;
@@ -47,7 +47,7 @@ public class DoSubtreeGames {
 
 	public static NameMap rootNamesP1;
 	public static NameMap rootNamesP2;
-	
+
 	private static int numZeroLookups = 0;
 
 	// DEFINE THE SUBTREES!
@@ -142,7 +142,7 @@ public class DoSubtreeGames {
 						InfoToken.factory(bytNums[0], bytNums[2], InfoToken.s_raise, false)})
 			}
 	};
-	
+
 	public final static InfoString[][] decisionsP2 = new InfoString[][] {
 			// subtree a:
 			//  P1 checks
@@ -238,7 +238,9 @@ public class DoSubtreeGames {
 		transition = new float[][][][][] {
 				transition0to3, new float[][][][] {}, new float[][][][] {}, transition3to4, transition4to5
 		};
-		
+
+		// System.out.println(transition0to3);
+
 		numClusters = new int[] {
 				startPDT.length,				// 0 bc's
 				-1,								// 1
@@ -257,36 +259,59 @@ public class DoSubtreeGames {
 		String inNamesP2 = ROOT_GAME_INPUT_DIR + "nameMap.p2.obj";
 		rootNamesP1 = ReadBinaryNameMap.getNameMap(inNamesP1);
 		rootNamesP2 = ReadBinaryNameMap.getNameMap(inNamesP2);
-		
+
 		System.out.println("done loading input files in time: " +
 				(System.currentTimeMillis() - tStage));
 		tStage = System.currentTimeMillis();
-		
-		
-		
-		
-		// we want to compute P(p1=cluster_i AND p2=cluster_j | move-seq) for 
-		//  various move sequences (inc. chance moves) that result in different continuations of 
-		//  the game (e.g. check-check versus raise-call).  We do this for both 
+
+
+
+
+		// we want to compute P(p1=cluster_i AND p2=cluster_j | move-seq) for
+		//  various move sequences (inc. chance moves) that result in different continuations of
+		//  the game (e.g. check-check versus raise-call).  We do this for both
 		//  players and then combine results.
-		
+
 		// do this using Bayes' theorem:
-		//  P(p1=cluster_i AND p2=cluster_j | move-seq) = 
-		//   ( P(p1=cluster_i AND p2=cluster_j) * P(move-seq | p1=cluster_i AND p2=cluster_j) ) 
+		//  P(p1=cluster_i AND p2=cluster_j | move-seq) =
+		//   ( P(p1=cluster_i AND p2=cluster_j) * P(move-seq | p1=cluster_i AND p2=cluster_j) )
 		//   / P(move-seq)
 		// let alpha = 1 / P(move-seq), then
-		//  P(p1=cluster_i AND p2=cluster_j | move-seq) 
+		//  P(p1=cluster_i AND p2=cluster_j | move-seq)
 		//   = alpha * P(p1=cluster_i AND p2=cluster_j) * P(move-seq | p1=cluster_i AND p2=cluster_j)
-		// notice that alpha does not depend on i or j, so it will be normalized out.  
-		// So we take P(move-seq) out.  P(p1=cluster_i AND p2=cluster_j) comes from 
+		// notice that alpha does not depend on i or j, so it will be normalized out.
+		// So we take P(move-seq) out.  P(p1=cluster_i AND p2=cluster_j) comes from
 		//  startPDT and P(move-seq | p1=cluster_i AND p2=cluster_j) comes form rootSolPx
-		
-		
+
+
 		int numSubTrees = Constants.subtreeNames.length;
-		if(p1Pots.length != numSubTrees || p2Pots.length != numSubTrees || 
+		if(p1Pots.length != numSubTrees || p2Pots.length != numSubTrees ||
 				decisionsP2.length != numSubTrees || decisionsP1.length != numSubTrees) {
 			throw new RuntimeException();
 		}
+		// for (int subTree = 0;subTree < numSubTrees ;  subTree++) {
+		//
+		// 	for (int k=0; k < decisionsP1[subTree].length ; k++) {
+		// 		// System.out.println("decisionsP1["+subTree+"]:"+decisionsP1[subTree][k]);
+		// 		System.out.println("probLastMove(decisionsP1["+subTree+"]["+k+"]):"+probLastMove(decisionsP1[subTree][k], true));
+		// 	}
+		//
+		// }
+				// decisionsP1[0]:01C-
+				// decisionsP1[1]:01C-
+				// decisionsP1[1]:01C-02R-01C-
+				// decisionsP1[2]:01C-
+				// decisionsP1[2]:01C-02R-01R-
+				// decisionsP1[3]:01C-
+				// decisionsP1[3]:01C-02R-01R-
+				// decisionsP1[3]:01C-02R-01R-02R-01C-
+				// decisionsP1[4]:01R-
+				// decisionsP1[5]:01R-
+				// decisionsP1[5]:01R-02R-01C-
+				// decisionsP1[6]:01R-
+				// decisionsP1[6]:01R-02R-01R-
+
+
 
 		for(int subTree = 0; subTree < numSubTrees; subTree++) {
 			double[][] clusterPdt = new double[numClusters[0]][numClusters[0]];
@@ -294,25 +319,34 @@ public class DoSubtreeGames {
 			for(byte i = 0; i < numClusters[0]; i++) {
 				for(byte j = i; j < numClusters[0]; j++) {
 					double pMovesGivenIJ = 1;
-					
+
 					// p1's moves
 					for(int k = 0; k < decisionsP1[subTree].length; k++) {
+						// System.out.println("probLastMove:" + probLastMove(decisionsP1[subTree][k].prepend(
+						// 		InfoToken.factory(bytNums[0], DoGT.s_player1, i, true)), true));   0.0
+						// System.out.println("decisionsP1[subtree][k]:" + decisionsP1[subTree][k]); ok! :01C-02R-01C-
+						// System.out.println("decisionsP1[subtree][k].prepend:" + decisionsP1[subTree][k].prepend(
+						// 		InfoToken.factory(bytNums[0], DoGT.s_player1, i, true))); //ok! :012-01R-02R-01R-
+						// System.out.println("probLastMove:"+probLastMove(decisionsP1[subTree][k], true));  0.0
 						pMovesGivenIJ *= probLastMove(decisionsP1[subTree][k].prepend(
 								InfoToken.factory(bytNums[0], DoGT.s_player1, i, true)), true);
 					}
-					
+
 					// p2's moves
 					for(int k = 0; k < decisionsP2[subTree].length; k++) {
+						// System.out.println("decisionsP2[subtree][k].prepend:" + decisionsP2[subTree][k].prepend(
+						// 		InfoToken.factory(bytNums[0], DoGT.s_player2, j, true))); //ok! :022-01R-02R-01R-02C-
 						pMovesGivenIJ *= probLastMove(decisionsP2[subTree][k].prepend(
 								InfoToken.factory(bytNums[0], DoGT.s_player2, j, true)), false);
 					}
-					
+					// System.out.println("pMovesGivenIJ:"+pMovesGivenIJ); 0.0
+					// System.out.println("startPDT[i][j]:"+startPDT[i][j]);  ok!
 					double pIJGivenMoves = startPDT[i][j] * pMovesGivenIJ;
-					
+
 					if(pIJGivenMoves == 0) {
 //						System.out.println("Warning: zero probability event");
 					}
-					
+
 					sum += pIJGivenMoves;
 					clusterPdt[i][j] = pIJGivenMoves;
 				}
@@ -324,16 +358,18 @@ public class DoSubtreeGames {
 			System.out.println("backprop'ed " + Constants.subtreeNames[subTree] + ":");
 			for(byte i = 0; i < numClusters[0]; i++) {
 				for(byte j = i; j < numClusters[0]; j++) {
+					// System.out.println("clusterPdt:"+clusterPdt[i][j]);  0.0
+					// System.out.println("sum:"+sum); 0.0
 					clusterPdt[i][j] /= sum;
 					System.out.println("  [" + i + ", " + j + "] = " + clusterPdt[i][j]);
 				}
 			}
-			
-			// now we have 'backpropogated' the move seq info back to 
+
+			// now we have 'backpropogated' the move seq info back to
 			//   the startPDT at the root.  but we want to write a startPDT
 			//   for the subtree!!
 			// to do this, use the transition probabilities for 0->3
-			
+
 			double subtreeStartPDT[][] = new double[numClusters[3]][numClusters[3]];
 			sum = 0;
 			for(byte i = 0; i < numClusters[3]; i++) {
@@ -344,10 +380,16 @@ public class DoSubtreeGames {
 						for(byte l = 0; l < numClusters[0]; l++) {
 							// {k, l} -> {i, j}
 							outcomeAccum += clusterPdt[Math.min(k, l)][Math.max(k, l)] *
-									(transition0to3[k][l][i][j] + 
+									(transition0to3[k][l][i][j] +
 									transition0to3[k][l][j][i]) / 2;
+							// System.out.println("transition0to3:"+transition0to3[k][l][i][j]);   ok!
+							// System.out.println("clusterPdt:"+clusterPdt[Math.min(k, l)][Math.max(k, l)]); NaN
+
 						}
 					}
+
+					// System.out.println("subtree start PDT:"+outcomeAccum);
+
 					subtreeStartPDT[i][j] = outcomeAccum;
 					sum += outcomeAccum;
 				}
@@ -359,12 +401,12 @@ public class DoSubtreeGames {
 					System.out.println("  [" + i + ", " + j + "] = " + subtreeStartPDT[i][j]);
 				}
 			}
-			
+
 			String dirName = ROOT_OUTPUT_DIR + Constants.subtreeNames[subTree] + Constants.dirSep;
 			new File(dirName).mkdir();
 			String outFile = dirName + "subtreeGameDescription";
 			Helper.prepFilePath(outFile);
-			WriteBinarySubtreeGame.writeSubtreeGameDescription(outFile, subtreeStartPDT, 
+			WriteBinarySubtreeGame.writeSubtreeGameDescription(outFile, subtreeStartPDT,
 					p1Pots[subTree], p2Pots[subTree]);
 		}
 
@@ -373,20 +415,33 @@ public class DoSubtreeGames {
 		System.out.println("");
 		System.out.println("done program in time: " +
 				(System.currentTimeMillis() - tTotal));
-		
+
 	}
-	
+
 	private static float probLastMove(InfoString x, boolean isP1) {
 		Map weights = (isP1 ? rootSolP1 : rootSolP2);
 		NameMap names = (isP1 ? rootNamesP1 : rootNamesP2);
-		
+
+		// System.out.println("names:"+names); // names:stage3.NameMap@2739f91b
+		// System.out.println("weights:"+weights); // weights:{}
+
+
 		if(InfoToken.isChance(x.arr[x.arr.length-1])) {
 			throw new RuntimeException();
 		}
-		
+
 		InfoString beforeX = getNextToLastAction(x, isP1);
-		Integer beforeXName = new Integer(names.getShort(beforeX, false));
+
+		// System.out.println("beforeX:" + beforeX ); //  01R-
+
+		Integer beforeXName = Integer.valueOf(names.getShort(beforeX, false));
+
+		// System.out.println("beforeXName:" + beforeXName ); // 0
+
 		Float beforeXFloat = (Float) weights.get(beforeXName);
+
+		// System.out.println("beforeXFloat:" + beforeXFloat ); // null
+
 		float weightBeforeX;
 		if(beforeXFloat == null) {
 			// not found in solution...value is zero
@@ -395,7 +450,7 @@ public class DoSubtreeGames {
 		} else {
 			weightBeforeX = beforeXFloat.floatValue();
 		}
-		
+
 		if(weightBeforeX == 0) {
 			if(isP1) {
 				System.out.println(beforeXName);
@@ -403,7 +458,7 @@ public class DoSubtreeGames {
 			return 0;
 		}
 
-		Float xFloat = (Float) weights.get(new Integer(names.getShort(x, false)));
+		Float xFloat = (Float) weights.get( Integer.valueOf(names.getShort(x, false)));
 		float weightX;
 		if(xFloat == null) {
 			numZeroLookups++;
@@ -411,21 +466,21 @@ public class DoSubtreeGames {
 		} else {
 			weightX = xFloat.floatValue();
 		}
-		
+
 		return weightX / weightBeforeX;
 	}
-	
+
 	private static InfoString getNextToLastAction(InfoString x, boolean isP1) {
 		int actionIndex = -1; // -1 is a legal value if answer is empty seq!
 		if(x.arr.length < 3) {
 			return InfoString.emptyInfoString;
 		}
-		
+
 		for(int i = x.arr.length-2; i >= 0; i--) {
 			if(InfoToken.isChance(x.arr[i])) {
 				continue;
 			}
-			
+
 			if(isP1) {
 				if(InfoToken.isP1(x.arr[i])) {
 					actionIndex = i;
@@ -438,7 +493,7 @@ public class DoSubtreeGames {
 				}
 			}
 		}
-		
+
 		byte[] newArr = new byte[actionIndex+1];
 		System.arraycopy(x.arr, 0, newArr, 0, actionIndex+1);
 		InfoString answer = new InfoString(newArr);

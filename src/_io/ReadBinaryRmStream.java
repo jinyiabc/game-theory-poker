@@ -21,17 +21,17 @@ import _misc.Constants;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ReadBinaryRmStream {
-	
+
 	BurstBufferedReader in;
 	public int maxNumBoardCards;
 	public int[] numClusters;
 
 	public RewardMatrixElement container;
 	public boolean useContainer;
-	
-	public ReadBinaryRmStream(String fileName, int bufferSize, boolean useContainer) 
+
+	public ReadBinaryRmStream(String fileName, int bufferSize, boolean useContainer)
 			throws IOException {
-		
+
 		in = new BurstBufferedReader(fileName, bufferSize);
 		
 		// read and verify format ID
@@ -45,48 +45,48 @@ public class ReadBinaryRmStream {
 		for(int i = 0; i < 10; i++) {
 			header[i] = in.readShort();
 		}
-		
+
 		// process header
 		numClusters = new int[6];
 		for(int i = 0; i < 6; i++) {
 			numClusters[i] = header[i];
 		}
 		maxNumBoardCards = header[6];
-		
+
 		if(useContainer) {
 			container = new RewardMatrixElement(0, 0, 0);
 		}
 		this.useContainer = useContainer;
 	}
-	
+
 	public void getRmeViaContainer() throws IOException {
 		if(!useContainer) {
 			throw new RuntimeException();
 		}
-		
+
 		try {
 
 			// be careful about calling in.readXyz() once per field
 			container.firstDim = in.readInt();
 			container.secondDim = in.readInt();
 			container.value = in.readFloat();
-			
+
 			return;
-			
+
 		} catch (BufferUnderflowException bue) {
 			container = null;
 			return;
 		}
-		
+
 	}
-	
+
 	public RewardMatrixElement getRme() throws IOException {
 		if(useContainer) {
 			throw new RuntimeException();
 		}
-		
+
 		try {
-			
+
 			int firstDim;
 			int secondDim;
 			float value;
@@ -95,15 +95,15 @@ public class ReadBinaryRmStream {
 			firstDim = in.readInt();
 			secondDim = in.readInt();
 			value = in.readFloat();
-			
+
 			return new RewardMatrixElement(firstDim, secondDim, value);
-			
+
 		} catch (BufferUnderflowException bue) {
 			return null;
 		}
-		
+
 	}
-	
+
 	public void close() {
 		in.close();
 	}
