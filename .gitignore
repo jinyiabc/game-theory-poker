@@ -4,3 +4,11 @@
 *.jar
 *.war
 *.ear
+*.obj
+*.mps
+*.sol
+rewardMatrix*
+
+poker_data/14-card holdem/
+poker_data/52-card-1/
+poker_data/52-card/

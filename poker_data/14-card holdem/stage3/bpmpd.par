@@ -38,7 +38,7 @@ TABS      = 1.0D-12       ! Absolute pivot tolerance for the first factorization
 TRABS     = 1.0D-15       ! Absolute pivot tolerance during the algorithm
 LAM       = 1.1D-05       ! Minimum value of lambda
 TFIND     = 25.           ! Pivot search loop count
-ORDERING  = 2.0           !  1.0 : Minimum degree
+ORDERING  = 1.0           !  1.0 : Minimum degree
                           !  2.0 : Minimum fill-in
                           !  3.0 : Minimum fill-in for augmented system
                           ! other: No ordering

@@ -74,9 +74,9 @@ So I started working on this during MIT's Independent Activities Period in Janua
 	* note that there are other LP-solvers available.  I just happened to use bpmpd.  The MPS file format is supported by most.
 
 		```
-java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoGT root
-java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoPreprocessRm mem-heavy root
-java -Xms400M -Xmx1700M -XX:+UseG1GC  stage3.DoWriteLP root
+java -Xms1024M -Xmx3096M -XX:+UseG1GC  stage3.DoGT root
+java -Xms1024M -Xmx3096M -XX:+UseG1GC  stage3.DoPreprocessRm mem-heavy root
+java -Xms1024M -Xmx3096M -XX:+UseG1GC  stage3.DoWriteLP root
 		cd /net1/bpmpd
 		ln -s ./root/game.p1.mps rootp1.mps
 		ln -s ./root/game.p2.mps rootp2.mps

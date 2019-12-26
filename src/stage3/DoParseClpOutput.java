@@ -1,5 +1,6 @@
 /*
  * Created on Jul 10, 2005
+ * Add Gurobi on Dec 17, 2019
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -12,6 +13,7 @@ import _io.*;
 import java.io.*;
 import java.io.FileReader;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Adam
@@ -31,9 +33,13 @@ public class DoParseClpOutput {
 
 	private final static Float floatZero = Float.valueOf(0);
 
-	private final static String solverName = "bpmpd";
+	private final static String solverName = "gurobi";
+//	private final static String solverName = "bpmpd";
+
 
 	private final static int bpmpdPrefixLines = 13;
+	private final static int gurobiPrefixLines = 2;
+	
 
 	public static void main(String[] args) throws Exception {
 		String[] subtreesToWrite;
@@ -57,6 +63,7 @@ public class DoParseClpOutput {
 					+ Constants.dirSep;
 
 			String[] inFileSuffixes = new String[] {"game.p1.sol", "game.p2.sol"};
+			//String[] inFileSuffixes = new String[] {"gurobi.p2.sol"};
 			double tSubtree = System.currentTimeMillis();
 
 			for(int file = 0; file < inFileSuffixes.length; file++) {
@@ -94,14 +101,16 @@ public class DoParseClpOutput {
 						in.readLine();
 					}
 				}
+				
+				if(solverName.equals("gurobi")) {
+					for(int i = 0; i < gurobiPrefixLines; i++) {
+						in.readLine();
+					}
+				}
 
 				while ((line = in.readLine()) != null) {
-					// System.out.println("line before split:"+line);
-					lineArray = line.split("\\s+");
-					// System.out.println("1st:"+lineArray[0]+"     2nd:"+lineArray[1]+"3rd"+lineArray[2]);
-					// if (lineArray[1].equals == null){
-					// 	break;
-					// }
+					//System.out.println("line before split:"+line);
+					lineArray = line.split("\\s+");					
 					if(solverName.equals("clp")) {
 						if(!processLineClp(weights, lineArray, varPrefix)) {
 							break;
@@ -110,15 +119,26 @@ public class DoParseClpOutput {
 						if(!processLineBpmpd(weights, lineArray, varPrefix)) {
 							break;
 						}
-					}
+					} else if(solverName.equals("gurobi")) {
+						if(!processLineGurobi(weights, lineArray, varPrefix)) {
+							break;
+						}
+					} 
 
 				}
 
 				in.close();
-
 				String outFile = outDir + inFileSuffixes[file] + ".obj";
 				WriteBinarySolutionMap.writeSolutionMap(outFile, weights, isP1Solution);
+				
+//				Map<Integer, Float> solWeights = ReadBinarySolutionMap.getSolutionMap(outFile, isP1Solution);
+//				for(Entry<Integer, Float> element  : solWeights.entrySet()) {
+//					System.out.println("key:"+element.getKey()+",is P1:"+isP1Solution);
+//					System.out.println("value:"+element.getValue());
+//				}
+				
 
+				
 				System.out.println("File " + inFileSuffixes[file] + " (" + weights.size() +
 						" records) done in time: " + (System.currentTimeMillis() - tFile));
 			}
@@ -130,6 +150,33 @@ public class DoParseClpOutput {
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Entire program done in time: " + (System.currentTimeMillis() - tTotal));
+		
+		
+//		String ROOT_GAME_INPUT_DIR = Constants.DATA_FILE_REPOSITORY +
+//				"stage3" + Constants.dirSep + "root" + Constants.dirSep + "bpmpd" +  Constants.dirSep;				
+//		String inSolP1 = ROOT_GAME_INPUT_DIR + "game.p1.sol.obj";
+//		String inSolP2 = ROOT_GAME_INPUT_DIR + "game.p2.sol.obj";
+//		Map<Integer, Float> rootSolP1 = ReadBinarySolutionMap.getSolutionMap(inSolP1, true);
+//		Map<Integer, Float> rootSolP2 = ReadBinarySolutionMap.getSolutionMap(inSolP2, false);
+//		
+//		String ROOT_GAME_INPUT_DIR1 = Constants.DATA_FILE_REPOSITORY +
+//				"stage3" + Constants.dirSep + "root" + Constants.dirSep + "gurobi" +  Constants.dirSep;				
+//		String inSolP11 = ROOT_GAME_INPUT_DIR1 + "game.p1.sol.obj";
+//		String inSolP21 = ROOT_GAME_INPUT_DIR1 + "game.p2.sol.obj";
+//		Map<Integer, Float> rootSolP11 = ReadBinarySolutionMap.getSolutionMap(inSolP11, true);
+//		Map<Integer, Float> rootSolP21 = ReadBinarySolutionMap.getSolutionMap(inSolP21, false);
+//		
+////		System.out.println("gurobi rootSolP1:"+rootSolP11); 
+////		System.out.println("gurobi rootSolP2:"+rootSolP21); 
+//		
+////		Map<Integer, Float> solWeights = ReadBinarySolutionMap.getSolutionMap(outFile, isP1Solution);
+//		for(Entry<Integer, Float> element  : rootSolP11.entrySet()) {
+//			System.out.println("key:"+element.getKey());
+//			System.out.println("gurobi value:"+element.getValue());
+//			System.out.println("bpmpd value:"+rootSolP1.get(element.getKey()));
+//
+//		}
+		
 	}
 
 	private static boolean processLineBpmpd(Map weights, String[] lineArray, char varPrefix) {
@@ -161,6 +208,29 @@ public class DoParseClpOutput {
 		addToMap(weights, name, value);
 		return true;
 	}
+	
+	private static boolean processLineGurobi(Map weights, String[] lineArray, char varPrefix) {
+		if(lineArray.length == 1) {
+			throw new RuntimeException();
+		}
+		else {
+				if(lineArray.length == 0) {
+					return false;
+				}
+		}
+		
+		//System.out.println("1st:"+lineArray[0]+"    "+"2nd:"+lineArray[1]+"    ");
+		
+		if(lineArray[0].charAt(0) != varPrefix) {  // Only X,Y can put into solution map.
+			return true;
+		}
+
+		Integer name = Integer.valueOf(lineArray[0].substring(1));
+		Float value = Float.valueOf(lineArray[1]);
+
+		addToMap(weights, name, value);
+		return true;
+	}
 
 	private static boolean processLineClp(Map weights, String[] lineArray, char varPrefix) {
 		if(lineArray.length != 5) {
@@ -178,7 +248,7 @@ public class DoParseClpOutput {
 		if(!lineArray[0].equals("")) {
 			// throw new RuntimeException();
 		}
-		if(lineArray[2].charAt(0) != varPrefix) {
+		if(lineArray[2].charAt(0) != varPrefix) {   
 			return true;
 		}
 

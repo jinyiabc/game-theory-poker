@@ -311,7 +311,7 @@ public class DoSubtreeGames {
 				// decisionsP1[6]:01R-
 				// decisionsP1[6]:01R-02R-01R-
 
-
+		System.out.println("numClusters[0]:"+numClusters[0]);
 
 		for(int subTree = 0; subTree < numSubTrees; subTree++) {
 			double[][] clusterPdt = new double[numClusters[0]][numClusters[0]];
@@ -322,8 +322,8 @@ public class DoSubtreeGames {
 
 					// p1's moves
 					for(int k = 0; k < decisionsP1[subTree].length; k++) {
-						// System.out.println("probLastMove:" + probLastMove(decisionsP1[subTree][k].prepend(
-						// 		InfoToken.factory(bytNums[0], DoGT.s_player1, i, true)), true));   0.0
+//						 System.out.println("probLastMove:" + probLastMove(decisionsP1[subTree][k].prepend(
+//						 		InfoToken.factory(bytNums[0], DoGT.s_player1, i, true)), true));   //0.0
 						// System.out.println("decisionsP1[subtree][k]:" + decisionsP1[subTree][k]); ok! :01C-02R-01C-
 						// System.out.println("decisionsP1[subtree][k].prepend:" + decisionsP1[subTree][k].prepend(
 						// 		InfoToken.factory(bytNums[0], DoGT.s_player1, i, true))); //ok! :012-01R-02R-01R-
@@ -339,8 +339,8 @@ public class DoSubtreeGames {
 						pMovesGivenIJ *= probLastMove(decisionsP2[subTree][k].prepend(
 								InfoToken.factory(bytNums[0], DoGT.s_player2, j, true)), false);
 					}
-					// System.out.println("pMovesGivenIJ:"+pMovesGivenIJ); 0.0
-					// System.out.println("startPDT[i][j]:"+startPDT[i][j]);  ok!
+//					 System.out.println("pMovesGivenIJ:"+pMovesGivenIJ); //0.0
+//					 System.out.println("startPDT[i][j]:"+startPDT[i][j]); // ok!
 					double pIJGivenMoves = startPDT[i][j] * pMovesGivenIJ;
 
 					if(pIJGivenMoves == 0) {
@@ -358,8 +358,8 @@ public class DoSubtreeGames {
 			System.out.println("backprop'ed " + Constants.subtreeNames[subTree] + ":");
 			for(byte i = 0; i < numClusters[0]; i++) {
 				for(byte j = i; j < numClusters[0]; j++) {
-					// System.out.println("clusterPdt:"+clusterPdt[i][j]);  0.0
-					// System.out.println("sum:"+sum); 0.0
+//					 System.out.println("clusterPdt:"+clusterPdt[i][j]);  //0.0
+//					 System.out.println("sum:"+sum); //0.0
 					clusterPdt[i][j] /= sum;
 					System.out.println("  [" + i + ", " + j + "] = " + clusterPdt[i][j]);
 				}
@@ -422,8 +422,8 @@ public class DoSubtreeGames {
 		Map weights = (isP1 ? rootSolP1 : rootSolP2);
 		NameMap names = (isP1 ? rootNamesP1 : rootNamesP2);
 
-		// System.out.println("names:"+names); // names:stage3.NameMap@2739f91b
-		// System.out.println("weights:"+weights); // weights:{}
+//		 System.out.println("names:"+names); // names:stage3.NameMap@2739f91b
+//		 System.out.println("weights:"+weights); // weights:{}
 
 
 		if(InfoToken.isChance(x.arr[x.arr.length-1])) {

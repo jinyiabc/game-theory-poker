@@ -7,23 +7,20 @@
 package stage2;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.*;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import stage2.Touple.*;
-import stage1.HandRecordScore;
-import stage1.*;
+
 import _game.Card;
-import _io.*;
-import _io.ReadBinaryScoreMapsStream;
+import _io.ReadBinaryData;
+import _io.ReadBinaryScoreGroupStream;
 import _io.ReadBinaryScoreStream;
 import _io.WriteBinaryClusterIDStream;
-import _misc.Combinations;
 import _misc.Constants;
 import _misc.Helper;
+import stage1.HandRecord;
+import stage1.HandRecordScore;
+import stage1.HandRecordScoreGroups;
+
+
 
 /**
  * @author Adam

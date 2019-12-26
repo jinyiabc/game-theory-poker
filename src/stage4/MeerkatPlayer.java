@@ -6,20 +6,27 @@
  */
 package stage4;
 
-import poker.Action;
-import poker.Card;
-import poker.GameInfo;
-import poker.*;
-import poker.util.Preferences;
-import _game.*;
-import stage3.InfoSet.*;
-import stage3.*;
-import _misc.*;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
 
-import java.util.*;
-import _io.*;
-import java.io.*;
-import java.nio.*;
+import com.biotools.meerkat.Action;
+import com.biotools.meerkat.Card;
+import com.biotools.meerkat.GameInfo;
+import com.biotools.meerkat.Holdem;
+import com.biotools.meerkat.Player;
+import com.biotools.meerkat.util.Preferences;
+
+import _misc.Constants;
+import _misc.Helper;
+import stage3.DoGT;
+import stage3.DoSubtreeGames;
+import stage3.NameMap;
+import stage3.InfoSet.InfoString;
+import stage3.InfoSet.InfoToken;
 
 /**
  * @author Adam
@@ -28,7 +35,7 @@ import java.nio.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class MeerkatPlayer implements Player {
-	
+
 	// STATIC
 	// ----------------------------------------
 
@@ -49,78 +56,79 @@ public class MeerkatPlayer implements Player {
 	private final static int s_indQueen = 10;
 	private final static int s_indKing = 11;
 	private final static int s_indAce = 12;
-	
+	private Card c1, c2; // our hole cards
+
 	private static byte getCardIndex(Card x) {
 		// Don't rely on the backing values of the poker.Card class.
 		//  Only use comparisons to its constants.
 		int suitMultiplier = -1;
-		switch(x.getSuit()) {
-			case Card.HEARTS:
-				suitMultiplier = s_indHearts;
-				break;
-			case Card.DIAMONDS:
-				suitMultiplier = s_indDiamonds;
-				break;
-			case Card.CLUBS:
-				suitMultiplier = s_indClubs;
-				break;
-			case Card.SPADES:
-				suitMultiplier = s_indSpades;
-				break;
-			default:
-				throw new RuntimeException();
+		switch (x.getSuit()) {
+		case Card.HEARTS:
+			suitMultiplier = s_indHearts;
+			break;
+		case Card.DIAMONDS:
+			suitMultiplier = s_indDiamonds;
+			break;
+		case Card.CLUBS:
+			suitMultiplier = s_indClubs;
+			break;
+		case Card.SPADES:
+			suitMultiplier = s_indSpades;
+			break;
+		default:
+			throw new RuntimeException();
 		}
-		
+
 		int rank = -1;
-		switch(x.getRank()) {
-			case Card.TWO:
-				rank = s_indTwo;
-				break;
-			case Card.THREE:
-				rank = s_indThree;
-				break;
-			case Card.FOUR:
-				rank = s_indFour;
-				break;
-			case Card.FIVE:
-				rank = s_indFive;
-				break;
-			case Card.SIX:
-				rank = s_indSix;
-				break;
-			case Card.SEVEN:
-				rank = s_indSeven;
-				break;
-			case Card.EIGHT:
-				rank = s_indEight;
-				break;
-			case Card.NINE:
-				rank = s_indNine;
-				break;
-			case Card.TEN:
-				rank = s_indTen;
-				break;
-			case Card.JACK:
-				rank = s_indJack;
-				break;
-			case Card.QUEEN:
-				rank = s_indQueen;
-				break;
-			case Card.KING:
-				rank = s_indKing;
-				break;
-			case Card.ACE:
-				rank = s_indAce;
-				break;
-			default:
-				throw new RuntimeException();
+		switch (x.getRank()) {
+		case Card.TWO:
+			rank = s_indTwo;
+			break;
+		case Card.THREE:
+			rank = s_indThree;
+			break;
+		case Card.FOUR:
+			rank = s_indFour;
+			break;
+		case Card.FIVE:
+			rank = s_indFive;
+			break;
+		case Card.SIX:
+			rank = s_indSix;
+			break;
+		case Card.SEVEN:
+			rank = s_indSeven;
+			break;
+		case Card.EIGHT:
+			rank = s_indEight;
+			break;
+		case Card.NINE:
+			rank = s_indNine;
+			break;
+		case Card.TEN:
+			rank = s_indTen;
+			break;
+		case Card.JACK:
+			rank = s_indJack;
+			break;
+		case Card.QUEEN:
+			rank = s_indQueen;
+			break;
+		case Card.KING:
+			rank = s_indKing;
+			break;
+		case Card.ACE:
+			rank = s_indAce;
+			break;
+		default:
+			throw new RuntimeException();
 		}
-		
+
 		return (byte) (_game.Card.NUM_RANKS * suitMultiplier + rank);
 	}
-	
+
 	private static byte getCluster(byte[] holeCards, byte[] boardCards) {
-		if(s_clusterIdLookup == null) {
+		if (s_clusterIdLookup == null) {
 			try {
 				s_clusterIdLookup = ClusterIdResolver.getClusterIdResolver();
 			} catch (Exception e) {
@@ -131,15 +139,13 @@ public class MeerkatPlayer implements Player {
 		try {
 			return (byte) s_clusterIdLookup.getCluster(holeCards, boardCards);
 		} catch (Exception e) {
-			System.out.println("RTE!  error getting cluster id (" 
-					+ Helper.byteArrayToString(holeCards) + ", " 
-					+ Helper.byteArrayToString(boardCards) + ")");
+			System.out.println("RTE!  error getting cluster id (" + Helper.byteArrayToString(holeCards) + ", " + Helper.byteArrayToString(boardCards) + ")");
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private static float getWeight(InfoString longName, boolean isP1, String subtreeName) {
-		if(s_WeightLookup == null) {
+		if (s_WeightLookup == null) {
 			try {
 				s_WeightLookup = WeightResolver.getWeightResolver();
 			} catch (Exception e) {
@@ -158,10 +164,10 @@ public class MeerkatPlayer implements Player {
 
 	private static DataOutputStream out;
 	private static String logFileName = "c:\\lovebot-" + _game.Card.GAME_NAME + ".log";
-	
+
 	private static void printLog(String x) {
 		x = new Date().toString() + "  --  " + x;
-		if(out == null) {
+		if (out == null) {
 			try {
 				out = new DataOutputStream(new FileOutputStream(logFileName));
 			} catch (Exception e) {
@@ -177,18 +183,17 @@ public class MeerkatPlayer implements Player {
 			throw new RuntimeException(ioe);
 		}
 	}
-	
-	public static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY + 
-			"stage3" + Constants.dirSep;
-	
+
+	public static final String ROOT_INPUT_DIR = Constants.DATA_FILE_REPOSITORY + "stage3" + Constants.dirSep;
+
 	private static final int MAX_SIMULT_FILES_OPEN = 1;
 
 	private static ClusterIdResolver s_clusterIdLookup = null;
 	private static WeightResolver s_WeightLookup = null;
-	
+
 	// NON-STATIC 
 	// ---------------------------------------------
-	
+
 	private byte[] m_holeCards = null;
 	private byte[] m_boardCards = null;
 	private boolean m_isP1;
@@ -200,31 +205,31 @@ public class MeerkatPlayer implements Player {
 	private String subtreeName;
 	private Map m_actionWeights;
 	private NameMap m_actionNames;
-	
+
 	public MeerkatPlayer() {
 		printLog("constructed");
 	}
 
 	public void holeCards(Card c0, Card c1, int seat) {
-		if(_game.Card.NUM_RANKS != 13 || _game.Card.NUM_SUITS != 4) {
+		if (_game.Card.NUM_RANKS != 13 || _game.Card.NUM_SUITS != 4) {
 			printLog("RTE!  wrong game parameters!");
 			throw new RuntimeException();
 		}
-		
+
 		printLog("got hole cards");
-		
+
 		m_boardCards = new byte[0];
-		m_isP1 = (seat == m_gi.getButton());
+		m_isP1 = (seat == m_gi.getButtonSeat());
 		m_seat = seat;
 		m_numBoardCards = 0;
 		m_brDepth = 0;
-		
-		m_holeCards = new byte[] {getCardIndex(c0), getCardIndex(c1)};
+
+		m_holeCards = new byte[] { getCardIndex(c0), getCardIndex(c1) };
 		Arrays.sort(m_holeCards);
-		
+
 		m_is = new InfoString(new byte[0]);
-		
-		if(m_isP1) {
+
+		if (m_isP1) {
 			printLog("I am the dealer");
 		} else {
 			printLog("I am not the dealer");
@@ -235,99 +240,98 @@ public class MeerkatPlayer implements Player {
 		updateMyCluster();
 	}
 
-	public Action getAction() {		
-		float[] weights = new float[] {Float.NaN, Float.NaN, Float.NaN}; // fold, raise, call
+	public Action getAction() {
+		float[] weights = new float[] { Float.NaN, Float.NaN, Float.NaN }; // fold, raise, call
 		printLog("chosing action under conditions " + m_is + " (brDepth = " + m_brDepth + ")");
 		byte action = InfoToken.s_fold;
-		while(action >= 0) {
-			InfoString augmented = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth,
-					action, false));
-			
-//			Integer choiceName = new Integer(m_actionNames.getShort(augmented, false));
-//			if(choiceName.intValue() != -1) {
-//				Float tmpFloat = (Float) m_actionWeights.get(choiceName);
-//				if(tmpFloat == null) {
-//					printLog("action " + action + " not in solution file (" 
-//							+ choiceName + ", " + augmented + ")");
-//					weights[action] = 0;
-//				} else {
-//					weights[action] = tmpFloat.floatValue();
-//				}
-//			} else {
-//				printLog("info string not recognized under action " 
-//						+ action + " (" + augmented + ") -- assuming it's an illegal move");
-//				weights[action] = 0;
-//			}
+		while (action >= 0) {
+			InfoString augmented = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, action, false));
+
+			//			Integer choiceName = new Integer(m_actionNames.getShort(augmented, false));
+			//			if(choiceName.intValue() != -1) {
+			//				Float tmpFloat = (Float) m_actionWeights.get(choiceName);
+			//				if(tmpFloat == null) {
+			//					printLog("action " + action + " not in solution file (" 
+			//							+ choiceName + ", " + augmented + ")");
+			//					weights[action] = 0;
+			//				} else {
+			//					weights[action] = tmpFloat.floatValue();
+			//				}
+			//			} else {
+			//				printLog("info string not recognized under action " 
+			//						+ action + " (" + augmented + ") -- assuming it's an illegal move");
+			//				weights[action] = 0;
+			//			}
 			weights[action] = getWeight(augmented, m_isP1, this.subtreeName);
-			
-//			if(weights[action] != getWeight(augmented, m_isP1, this.subtreeName)) {
-//				printLog("WeightResolver discrepancy...");
-//				printLog("   subtree " + this.subtreeName);
-//				printLog("   longname " + augmented);
-//				printLog("   longname array " + Helper.byteArrayToString(augmented.arr));
-//				printLog("   true shortname " + choiceName);
-//				printLog("   true weight " + weights[action]);
-//				printLog("   weightresolver weight " + getWeight(augmented, m_isP1, this.subtreeName));
-//			}
-			
-			switch(action) {
-				case InfoToken.s_fold:
-					action = InfoToken.s_raise;	break;
-				case InfoToken.s_raise:
-					action = InfoToken.s_call; break;
-				case InfoToken.s_call:
-					action = -1; break;
-				default:
-					printLog("RTE!  unknown chosen action");
-					throw new RuntimeException();
+
+			//			if(weights[action] != getWeight(augmented, m_isP1, this.subtreeName)) {
+			//				printLog("WeightResolver discrepancy...");
+			//				printLog("   subtree " + this.subtreeName);
+			//				printLog("   longname " + augmented);
+			//				printLog("   longname array " + Helper.byteArrayToString(augmented.arr));
+			//				printLog("   true shortname " + choiceName);
+			//				printLog("   true weight " + weights[action]);
+			//				printLog("   weightresolver weight " + getWeight(augmented, m_isP1, this.subtreeName));
+			//			}
+
+			switch (action) {
+			case InfoToken.s_fold:
+				action = InfoToken.s_raise;
+				break;
+			case InfoToken.s_raise:
+				action = InfoToken.s_call;
+				break;
+			case InfoToken.s_call:
+				action = -1;
+				break;
+			default:
+				printLog("RTE!  unknown chosen action");
+				throw new RuntimeException();
 			}
 		}
-		
+
 		// note that we're not dividing by the parent's weight..that will be taken
 		//   care of in normalization
 
 		printLog("chose action from " + Helper.floatArrayToString(weights));
-		
+
 		return pickActionFromUnnormalizedTriple(weights[0], weights[1], weights[2]);
 	}
-	
+
 	private Action pickActionFromUnnormalizedTriple(float fold, float raise, float call) {
 		float sum = fold + raise + call;
 		fold /= sum;
 		raise /= sum;
 		call /= sum;
 		printLog("choice sum " + sum);
-		if(sum == 0) {
+		if (sum == 0) {
 			printLog("RTE!  ill formed choice");
 			throw new RuntimeException();
 		}
 		float magicNumber = (float) Math.random();
 		printLog("magic number " + magicNumber);
 		double toCall = m_gi.getAmountToCall(m_seat);
-		if(magicNumber < fold) {
+		if (magicNumber < fold) {
 			return Action.foldAction(toCall);
 		}
-		if(magicNumber < fold + raise) {
-			return Action.raiseAction(toCall, m_gi.getBetSize());
+		if (magicNumber < fold + raise) {
+			return Action.raiseAction(toCall, m_gi.getCurrentBetSize());
 		}
-        return Action.callAction(toCall);
+		return Action.callAction(toCall);
 	}
 
 	public void actionEvent(int seat, Action act) {
 		printLog("incoming action event (" + act + ")");
-		
+
 		InfoString oldIs = m_is;
-		
-		if(act.isCheckOrCall()) {
-			m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, 
-					InfoToken.s_call, false));
-		} else if(act.isFoldOrMuck()) {
-			m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, 
-					InfoToken.s_fold, false));
-		} else if(act.isBetOrRaise()) {
-			m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, 
-					InfoToken.s_raise, false));
-		} else if(act.isBlind()) {
+
+		if (act.isCheckOrCall()) {
+			m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, InfoToken.s_call, false));
+		} else if (act.isFoldOrMuck()) {
+			m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, InfoToken.s_fold, false));
+		} else if (act.isBetOrRaise()) {
+			m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_brDepth, InfoToken.s_raise, false));
+		} else if (act.isBlind()) {
 			return; // don't increment m_brDepth!
 		} else {
 			printLog("RTE!  unknown action (" + seat + ", " + act.toString() + ")");
@@ -335,124 +339,119 @@ public class MeerkatPlayer implements Player {
 		}
 
 		printLog("action " + oldIs + " -> " + m_is);
-		
+
 		m_brDepth++;
 	}
-	
+
 	private void loadSolution(String subtreeName) {
 		this.subtreeName = subtreeName;
-		
-//		printLog("loading subtree solution...");
-//		
-//		String awName = ROOT_INPUT_DIR + subtreeName + Constants.dirSep;
-//		String nmName = awName;
-//		if(m_isP1) {
-//			awName += "game.p1.sol.obj";
-//			nmName += "nameMap.p1.obj";
-//		} else {
-//			awName += "game.p2.sol.obj";
-//			nmName += "nameMap.p2.obj";
-//		}
-//		try {
-//			printLog("loading " + awName);
-//			m_actionWeights = ReadBinarySolutionMap.getSolutionMap(awName, m_isP1);
-//			printLog("loading " + nmName);
-//			m_actionNames = ReadBinaryNameMap.getNameMap(nmName);
-//		} catch (Exception e) {
-//			printLog("RTE!  problem reading solution files");
-//			throw new RuntimeException(e);
-//		}
-//		
-//		printLog("subtree solution loaded");
+
+		//		printLog("loading subtree solution...");
+		//		
+		//		String awName = ROOT_INPUT_DIR + subtreeName + Constants.dirSep;
+		//		String nmName = awName;
+		//		if(m_isP1) {
+		//			awName += "game.p1.sol.obj";
+		//			nmName += "nameMap.p1.obj";
+		//		} else {
+		//			awName += "game.p2.sol.obj";
+		//			nmName += "nameMap.p2.obj";
+		//		}
+		//		try {
+		//			printLog("loading " + awName);
+		//			m_actionWeights = ReadBinarySolutionMap.getSolutionMap(awName, m_isP1);
+		//			printLog("loading " + nmName);
+		//			m_actionNames = ReadBinaryNameMap.getNameMap(nmName);
+		//		} catch (Exception e) {
+		//			printLog("RTE!  problem reading solution files");
+		//			throw new RuntimeException(e);
+		//		}
+		//		
+		//		printLog("subtree solution loaded");
 	}
-	
+
 	private static String findSubtreeName(InfoString rootBrConclusion) {
 		byte lastChoice = rootBrConclusion.getLastElement();
-		InfoString[][] subtreeDefs = (InfoToken.isP1(lastChoice) ? 
-				DoSubtreeGames.decisionsP1 : DoSubtreeGames.decisionsP2);
-		
+		InfoString[][] subtreeDefs = (InfoToken.isP1(lastChoice) ? DoSubtreeGames.decisionsP1 : DoSubtreeGames.decisionsP2);
+
 		String subtreeName = null;
 		// search...
-		for(int i = 0; i < subtreeDefs.length; i++) {
+		for (int i = 0; i < subtreeDefs.length; i++) {
 			InfoString[] sequenceActions = subtreeDefs[i];
-			InfoString lastActionSequence = sequenceActions[sequenceActions.length-1];
-			
-			if(lastActionSequence.arr.length != rootBrConclusion.arr.length - 1) {
+			InfoString lastActionSequence = sequenceActions[sequenceActions.length - 1];
+
+			if (lastActionSequence.arr.length != rootBrConclusion.arr.length - 1) {
 				continue;
 			}
 			boolean match = true;
-			for(int j = 0; j < lastActionSequence.arr.length; j++) {
-				if(lastActionSequence.arr[j] != rootBrConclusion.arr[j+1]) {
+			for (int j = 0; j < lastActionSequence.arr.length; j++) {
+				if (lastActionSequence.arr[j] != rootBrConclusion.arr[j + 1]) {
 					match = false;
 					break;
 				}
 			}
-			if(match) {
-				if(subtreeName != null) {
+			if (match) {
+				if (subtreeName != null) {
 					printLog("RTE!  multiple matching subtrees");
 					throw new RuntimeException();
 				}
 				subtreeName = Constants.subtreeNames[i];
 			}
 		}
-		
-		if(subtreeName == null) {
+
+		if (subtreeName == null) {
 			printLog("RTE!  subtree name not found");
 			throw new RuntimeException();
 		}
-		
+
 		return subtreeName;
 	}
-	
+
 	private void updateMyCluster() {
 		printLog("looking up cluster");
 		byte cluster = getCluster(m_holeCards, m_boardCards);
 		printLog("new cluster == " + cluster);
-		m_is = m_is.push(InfoToken.factory(m_numBoardCards, 
-				m_isP1 ? DoGT.s_player1 : DoGT.s_player2, cluster, true));
+		m_is = m_is.push(InfoToken.factory(m_numBoardCards, m_isP1 ? DoGT.s_player1 : DoGT.s_player2, cluster, true));
 	}
 
 	public void stageEvent(int stage) {
 		printLog("new stage (" + stage + ")");
 		m_brDepth = 0;
-		switch(stage) {
-			case Holdem.PREFLOP:
-				m_numBoardCards = 0;
-				break;
-				
-			case Holdem.FLOP:
-				loadSolution(findSubtreeName(m_is));
-				m_numBoardCards = 3;
-				for(int i = 0; i < 3; i++) {
-					m_boardCards = Helper.appendToByteArray(m_boardCards, 
-							getCardIndex(m_gi.getBoardCard(i)));
-				}
-				Arrays.sort(m_boardCards);
-				m_is = new InfoString(new byte[0]);
-				updateMyCluster();
-				break;
-				
-			case Holdem.TURN:
-				m_numBoardCards = 4;
-				m_boardCards = Helper.appendToByteArray(m_boardCards, 
-						getCardIndex(m_gi.getBoardCard(3)));
-				Arrays.sort(m_boardCards);
-				updateMyCluster();
-				break;
-				
-			case Holdem.RIVER:
-				m_numBoardCards = 5;
-				m_boardCards = Helper.appendToByteArray(m_boardCards, 
-						getCardIndex(m_gi.getBoardCard(4)));
-				Arrays.sort(m_boardCards);
-				updateMyCluster();
-				break;
-				
-			default:
-				printLog("RTE!  unknown stage");
-				throw new RuntimeException();
+		switch (stage) {
+		case Holdem.PREFLOP:
+			m_numBoardCards = 0;
+			break;
+
+		case Holdem.FLOP:
+			loadSolution(findSubtreeName(m_is));
+			m_numBoardCards = 3;
+			for (int i = 0; i < 3; i++) {
+				m_boardCards = Helper.appendToByteArray(m_boardCards, getCardIndex(m_gi.getBoard().getLastCard()));
+			}
+			Arrays.sort(m_boardCards);
+			m_is = new InfoString(new byte[0]);
+			updateMyCluster();
+			break;
+
+		case Holdem.TURN:
+			m_numBoardCards = 4;
+			m_boardCards = Helper.appendToByteArray(m_boardCards, getCardIndex(m_gi.getBoard().getLastCard()));
+			Arrays.sort(m_boardCards);
+			updateMyCluster();
+			break;
+
+		case Holdem.RIVER:
+			m_numBoardCards = 5;
+			m_boardCards = Helper.appendToByteArray(m_boardCards, getCardIndex(m_gi.getBoard().getLastCard()));
+			Arrays.sort(m_boardCards);
+			updateMyCluster();
+			break;
+
+		default:
+			printLog("RTE!  unknown stage");
+			throw new RuntimeException();
 		}
-		
+
 	}
 
 	public void gameStartEvent(GameInfo arg0) {
@@ -461,7 +460,7 @@ public class MeerkatPlayer implements Player {
 		printLog("game start");
 		m_gi = arg0;
 	}
-	
+
 	// UNUSED
 	// --------------------------
 
@@ -473,8 +472,13 @@ public class MeerkatPlayer implements Player {
 
 	}
 
-	public void showdownEvent(int arg0, Card arg1, Card arg2) {
-
+	/**
+	 * A showdown has occurred.
+	 * @param pos the position of the player showing
+	 * @param c1 the first hole card shown
+	 * @param c2 the second hole card shown
+	 */
+	public void showdownEvent(int seat, Card c1, Card c2) {
 	}
 
 	public void gameOverEvent() {
@@ -482,6 +486,12 @@ public class MeerkatPlayer implements Player {
 	}
 
 	public void gameStateChanged() {
+
+	}
+
+	@Override
+	public void dealHoleCardsEvent() {
+		// TODO Auto-generated method stub
 
 	}
 

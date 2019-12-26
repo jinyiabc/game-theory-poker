@@ -1,1 +1,0 @@
-./g/game.p2.mps

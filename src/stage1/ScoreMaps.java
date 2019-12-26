@@ -35,7 +35,7 @@ public class ScoreMaps {
 	
 //	private Map indexMap = new HashMap(); // for each hand, we keep track of its scores+counts
 	
-	private static final Integer one = new Integer(1);
+	private static final Integer one = Integer.valueOf(1);
 	
 	public ScoreMaps(byte numBoardCards, byte[] holeCards) {
 		this.holeCards = new byte[] {holeCards[0], holeCards[1]};
