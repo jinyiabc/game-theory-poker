@@ -71,6 +71,7 @@ public class DoStartClusterPDT {
 		for(int i = 0; i < numHoleCards; i++) {
 			clusterIds[i] = in[i].readRecord().clusterId;
 			in[i].close(); // there's only one initial cluster
+			//System.out.println("clusterIDs["+i+"]:"+clusterIds[i]);
 		}
 
 		StartClusterBean out = new StartClusterBean();
@@ -91,7 +92,6 @@ public class DoStartClusterPDT {
 		int numHoleCards = info.numHoleCards;
 		byte[][] holeCards = info.holeCards;
 		int[] clusterIds = info.clusterIds;
-
 		int[][] initialCounts = new int[numClusters][numClusters];
 		int sum = 0;
 		for(int i = 0; i < (numHoleCards-1); i++) {

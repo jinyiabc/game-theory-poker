@@ -6,19 +6,19 @@ package _game;
 public class Card {
 
 	// 52
-	public final static String GAME_NAME = "52-card";
-	public final static byte NUM_SUITS = 4;
-	public final static byte NUM_RANKS = 13;
-	public final static byte NUM_CARDS = NUM_SUITS * NUM_RANKS; //52
-	public final static int ACE = NUM_RANKS - 1; // for normal deck ACE=12 (TWO=0)
-	public static final byte[] ALLCARDSINDEX = new byte[] {
-			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-			11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-			21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-			31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-			41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
-			51};
-	public final static byte[] NUM_CLUSTERS = new byte[] {7, -1, -1, 7, 7, 7};
+//	public final static String GAME_NAME = "52-card";
+//	public final static byte NUM_SUITS = 4;
+//	public final static byte NUM_RANKS = 13;
+//	public final static byte NUM_CARDS = NUM_SUITS * NUM_RANKS; //52
+//	public final static int ACE = NUM_RANKS - 1; // for normal deck ACE=12 (TWO=0)
+//	public static final byte[] ALLCARDSINDEX = new byte[] {
+//			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+//			11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+//			21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+//			31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+//			41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+//			51};
+//	public final static byte[] NUM_CLUSTERS = new byte[] {7, -1, -1, 7, 7, 7};
 
 //	// 52
 //	public final static String GAME_NAME = "52-card holdem lite6";
@@ -93,16 +93,16 @@ public class Card {
 
 
 	// 14
-	// public final static String GAME_NAME = "14-card holdem";
-	// public final static byte NUM_SUITS = 2;
-	// public final static byte NUM_RANKS = 7;
-	// public final static byte NUM_CARDS = NUM_SUITS * NUM_RANKS; //14
-	// public final static int ACE = NUM_RANKS - 1; // for normal deck ACE=12 (TWO=0)
-	// public static final byte[] ALLCARDSINDEX = new byte[] {
-	// 		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-	// 		11, 12, 13};
-	// public final static byte[] NUM_CLUSTERS = new byte[] {3, -1, -1, 3, 3, 3};
-	//
+	 public final static String GAME_NAME = "14-card holdem";
+	 public final static byte NUM_SUITS = 2;
+	 public final static byte NUM_RANKS = 7;
+	 public final static byte NUM_CARDS = NUM_SUITS * NUM_RANKS; //14
+	 public final static int ACE = NUM_RANKS - 1; // for normal deck ACE=12 (TWO=0)
+	 public static final byte[] ALLCARDSINDEX = new byte[] {
+	 		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+	 		11, 12, 13};
+	 public final static byte[] NUM_CLUSTERS = new byte[] {3, -1, -1, 3, 3, 3};
+	
 
 
 }

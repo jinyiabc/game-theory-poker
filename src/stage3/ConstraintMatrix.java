@@ -7,6 +7,13 @@
 package stage3;
 
 import java.util.*;
+
+import _io.ReadBinaryNameMap;
+import _io.WriteMPS;
+import _misc.Constants;
+import _misc.Helper;
+import stage3.InfoSet.InfoString;
+
 import java.io.*;
 
 /**
@@ -16,7 +23,7 @@ import java.io.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ConstraintMatrix implements Serializable {
-
+	//private static final long serialVersionUID = 6529685098267757690L;
 	// used for column oriented view
 	private int idCounter = -1;
 	private Map columns;
@@ -157,7 +164,41 @@ public class ConstraintMatrix implements Serializable {
 	public void printColumnMatrix() {
 		for(int i = 0; i < columns.size(); i++) {
 			ConstraintMatrixColumn entry = (ConstraintMatrixColumn) columns.get( Integer.valueOf(i));
-			System.out.println("Col " + i + ": " + entry.toString());
+			System.out.println("Col " + i + ": " + ",rowIdsParentOf:"+Arrays.toString(entry.rowIdsParentOf)+",rowIdChildOf:"+entry.rowIdChildOf);
 		}
 	}
+	
+	public void printRowMatirx() throws Exception {
+//		ListIterator<ConstraintMatrixRow> itr=rows.listIterator();  
+//		while(itr.hasNext()){
+//	        System.out.print("index:"+itr.nextIndex());
+//	        ConstraintMatrixRow tmp = itr.next();
+//	        System.out.println(	",parentName:" + tmp.parentName + ",childNames:"+Arrays.toString(tmp.childNames));    
+//		}
+		String inNamesP1 = Constants.DATA_FILE_REPOSITORY +
+				"stage3" + Constants.dirSep + "root" + Constants.dirSep + "nameMap.p1.obj";
+		NameMap rootNamesP1 = ReadBinaryNameMap.getNameMap(inNamesP1);
+		String filename = "C:\\Users\\jinyi\\Desktop\\game-theory-poker\\poker_data\\14-card holdem\\stage3\\root\\test.txt";
+		WriteMPS out = new WriteMPS(filename, Helper.getBufferSize(2));
+		Iterator <ConstraintMatrixRow> itr = rowSet.iterator();
+		while(itr.hasNext()) {
+			ConstraintMatrixRow tmp = itr.next();
+			
+			InfoString parentName =  ((NameMap) rootNamesP1).getLong(tmp.parentName);
+			InfoString childName0 =  ((NameMap) rootNamesP1).getLong(tmp.childNames[0]);
+			InfoString childName1 =  ((NameMap) rootNamesP1).getLong(tmp.childNames[1]);
+			InfoString childName2 =  ((NameMap) rootNamesP1).getLong(tmp.childNames[2]);
+			InfoString childName3 =  ((NameMap) rootNamesP1).getLong(tmp.childNames[3]);
+			out.addElement1(tmp.parentName, parentName,tmp.childNames[0],childName0, tmp.childNames[1],childName1, 
+					tmp.childNames[2],childName2, tmp.childNames[3],childName3 );
+//			System.out.println("parent:" + parentName);
+//			System.out.println("child0:" + childName0);
+//			System.out.println("child1:" + childName1);
+//			System.out.println("child2:" + childName2);
+//			System.out.println("child3:" + childName3);
+		}
+		out.close();
+		
+	}
+	
 }

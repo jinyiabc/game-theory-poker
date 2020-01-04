@@ -95,6 +95,8 @@ public class DoGT {
 			GameState.rewardMatrixOut = new WriteBinaryRmeStream(rmeFileName,
 					Helper.getBufferSize(MAX_SIMULT_FILES_OPEN), numClusters, endNumBoardCards);
 		}
+	    //(bcCount, brDepth, numRaises, isChance, chance, isLeaf, newInfoForAll,
+		//		newInfoForAll, potAddP1, potAddP2, newClusters);
 		GameState subtreeRoot = new GameState((byte)startNumBoardCards,
 				(byte)-1, (byte)-1, true, (float)1.0,
 				false, (byte)-1, (byte)-1, Float.NaN, Float.NaN, null);
@@ -108,12 +110,14 @@ public class DoGT {
 
 		System.out.println("done computation: " + (System.currentTimeMillis() - tTotal));
 		System.out.println("number of p1 choices: " + numRowsAndCols[0]);
+		System.out.println("number of p2 choices: " + numRowsAndCols[1]);
 
 		if(writeToDisk) {
 			System.out.println("writing rest of data to disk...");
 			// write constraint matrices to disk
 			double tStage = System.currentTimeMillis();
 			ConstraintMatrix[] constraintMatrices = GameState.getConstraintMatrices();
+			
 
 			String constraintMatrixFileName = outDir + "constraints.p1.obj";
 			Helper.prepFilePath(constraintMatrixFileName);
@@ -133,6 +137,12 @@ public class DoGT {
 			// write name map to disk
 			tStage = System.currentTimeMillis();
 			NameMap[] nameMaps = GameState.getNameMaps();
+			
+//			nameMaps[0].printLongToShort();
+//			nameMaps[1].printLongToShort();
+			//constraintMatrices[0].printRowMatirx();
+			//constraintMatrices[0].printColumnMatrix();
+
 			String nameMapFileName = outDir + "nameMap.p1.obj";
 			Helper.prepFilePath(nameMapFileName);
 			WriteBinaryNameMap.writeNameMap(nameMapFileName, nameMaps[0],

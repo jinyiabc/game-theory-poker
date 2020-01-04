@@ -103,7 +103,7 @@ public class DoClusteringStep1 {
 	private static short[] handRecordScoreMapToArray(
 			HandRecordScoreMap in, int numBoardCards) {
 
-		int[] toReturn = new int[NUM_SCORE_GROUPS[numBoardCards]];
+		//int[] toReturn = new int[NUM_SCORE_GROUPS[numBoardCards]];
 
 		ArrayList<ToupleFloatInt> recs = new ArrayList<ToupleFloatInt>();
 

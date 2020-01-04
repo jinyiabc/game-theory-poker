@@ -22,8 +22,8 @@ public class Constants {
 				"/");
 
 //	public final static String DATA_FILE_REPOSITORY ="C:\\Users\\jinyi\\Desktop\\game-theory-poker\\poker_data\\52-card-1\\";
-	public final static String DATA_FILE_REPOSITORY ="C:\\Users\\jinyi\\Desktop\\game-theory-poker\\poker_data\\52-card\\";
-//	public final static String DATA_FILE_REPOSITORY ="C:\\Users\\jinyi\\Desktop\\game-theory-poker\\poker_data\\14-card holdem\\";
+	//public final static String DATA_FILE_REPOSITORY ="C:\\Users\\jinyi\\Desktop\\game-theory-poker\\poker_data\\52-card\\";
+	public final static String DATA_FILE_REPOSITORY ="C:\\Users\\jinyi\\Desktop\\game-theory-poker\\poker_data\\14-card holdem\\";
 
 	public final static String TEST_DATA_FILE_REPOSITORY ="/Volumes/SSD data/game-theory-poker/poker_data/52-card/TEST/";
 

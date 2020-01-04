@@ -211,7 +211,7 @@ public class GameState {
 					if(leafValue != 0) {
 						nnzLeafCount++;
 						rewardMatrixOut.writeRme(rowId, columnId, leafValue);
-						// System.out.println(String.format("%s %s %f",rowId, columnId, leafValue));
+						 //System.out.println(String.format("%s %s %f",rowId, columnId, leafValue));
 					}
 
 					// // write out results

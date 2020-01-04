@@ -173,7 +173,15 @@ public class DoWriteLP {
 		WriteMPS out = new WriteMPS(fileName, Helper.getBufferSize(MAX_SIMULT_FILES_OPEN));
 
 		out.print(new String[] {"NAME", null, "POKER"});
-
+//		rowObjective = " N";
+//		rowEqual = " E";
+//		rowGreater = " G";
+//		rewardConstraintPrefix = "r";
+//		planConstraintPrefix = "p";
+//		xPrefix = "x";
+//		yPrefix = "y";
+//		zPrefix = "z";
+//		rhsColumnName = "mRHS";
 		// ROWS section
 		out.print("ROWS");
 		out.print(new String[] {rowObjective, "OBJ"});

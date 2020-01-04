@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.*;
 import _io.*;
 import _misc.*;
+import stage3.InfoSet.InfoString;
 
 /**
  * @author Adam
@@ -196,7 +197,7 @@ public class WriteMPS {
 //		System.out.println("OUT: " + line);
 		out.writeBytes(line + "\n");
 //		System.out.println("pulse: DONE writing bytes from WriteMPS.out()");
-//		System.out.println(line);
+		System.out.println(line);
 	}
 
 	public void close() throws IOException {
@@ -210,6 +211,22 @@ public class WriteMPS {
 			return x;
 		}
 		return x.concat(emptyStrings[len-x.length()]);
+	}
+	
+	public void addElement1(int parentNameShort, InfoString parentNameLong, int childNameShort, InfoString childNameLong, int childNameShort2, InfoString childNameLong2, int childNameShort3, InfoString childNameLong3, int childNameShort4, InfoString childNameLong4) throws IOException {
+
+		        String parentname = String.valueOf(parentNameLong);
+		        String childname = String.valueOf(childNameLong);
+		        String childname2 = String.valueOf(childNameLong2);
+		        String childname3 = String.valueOf(childNameLong3);
+		        String childname4 = String.valueOf(childNameLong4);
+		        out.writeBytes(parentNameShort + ":" + parentname + "\n");
+		        out.writeBytes(childNameShort + ":" + childname + "\n");
+		        out.writeBytes(childNameShort2 + ":" + childname2 + "\n");
+		        out.writeBytes(childNameShort3 + ":" + childname3 + "\n");
+		        out.writeBytes(childNameShort4 + ":" + childname4 + "\n");
+
+				return;
 	}
 
 }

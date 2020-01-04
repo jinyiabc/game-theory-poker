@@ -128,7 +128,7 @@ public class DoClusteringStep2 {
 				clustererDone[i] = false;
 			}
 
-			int numHands = Constants.choose(Card.NUM_CARDS, 2) *
+			//int numHands = Constants.choose(Card.NUM_CARDS, 2) *
 					Constants.choose(Card.NUM_CARDS-2, numBoardCards);
 
 
@@ -141,6 +141,10 @@ public class DoClusteringStep2 {
 			double tPhase = System.currentTimeMillis();
 			int iterCounter = 1;
 			int phase = s_PhaseCalculateClusters;
+//			s_PhaseCalculateClusters = 0;
+//			s_PhaseSelectClusterer = 1;
+//			s_PhaseWriteClusteringToDisk = 2;
+//			s_PhaseDone = 3;
 			int minErrorCluster = -1;
 			while(phase != s_PhaseDone) {
 				System.out.println("");

@@ -37,6 +37,7 @@ public class ConstraintMatrixRow implements Serializable {
 			System.arraycopy(childNames, 0, newChildNames, 0, numChildren);
 			childNames = newChildNames;
 		}
+		//System.out.println("numChildren:"+numChildren);
 		System.arraycopy(x, 0, childNames, numChildren, x.length);
 		numChildren += x.length;
 	}
